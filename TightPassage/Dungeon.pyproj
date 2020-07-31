@@ -1,0 +1,105 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>084ed0e8-07a2-41e4-8921-b73a5154c88a</ProjectGuid>
+    <ProjectHome>
+    </ProjectHome>
+    <StartupFile>main.py</StartupFile>
+    <SearchPath>
+    </SearchPath>
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <Name>Dungeon</Name>
+    <RootNamespace>PythonApplication1</RootNamespace>
+    <InterpreterId>Global|PythonCore|3.6</InterpreterId>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="scrap\module1.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\Block.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\CEvent.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FourWayMove.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MainMenu.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="main.py" />
+    <Compile Include="src\Const.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\GameModes\MenuMode.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\GameModes\MessageMode.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\GameModes\PlayMode.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\Interactables\Collectable.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\GameMode.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\GameModeObserver.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\GameState.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\Interactables\Interactable.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\Interactables\Unit.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\Layer.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\Layers\ArrayLayer.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="scrap\Menus.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="scrap\module12.py">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <InterpreterReference Include="Global|PythonCore|3.6" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="assets\" />
+    <Folder Include="scrap\" />
+    <Folder Include="src\" />
+    <Folder Include="src\Layers\" />
+    <Folder Include="src\Interactables\" />
+    <Folder Include="src\GameModes\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
+  <!-- Uncomment the CoreCompile target to enable the Build command in
+       Visual Studio and specify your pre- and post-build commands in
+       the BeforeBuild and AfterBuild targets below. -->
+  <!--<Target Name="CoreCompile" />-->
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+</Project>
