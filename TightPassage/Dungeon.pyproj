@@ -26,7 +26,7 @@
     <Compile Include="scrap\module1.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\Block.py">
+    <Compile Include="src\Interactables\Block.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\CEvent.py">
@@ -35,7 +35,7 @@
     <Compile Include="FourWayMove.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="MainMenu.py">
+    <Compile Include="scrap\MainMenu.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="main.py" />
@@ -63,7 +63,13 @@
     <Compile Include="src\GameState.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="src\Interactables\Fireball.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="src\Interactables\Interactable.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\Interactables\Player.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\Interactables\Unit.py">

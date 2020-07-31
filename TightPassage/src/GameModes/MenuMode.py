@@ -11,11 +11,14 @@ class MenuMode(GameMode.GameMode):
         self.menu_screen.fill((0, 0, 0, 200))
         self.menu_screen.set_alpha(100) #why does fill with RGB+alpha not work?
         self.menu = None
-        menu = pygame_menu.Menu(300, 400, 'Welcome',theme=pygame_menu.themes.THEME_BLUE)
+        font = pygame_menu.font.FONT_OPEN_SANS
+        my_theme = pygame_menu.themes.THEME_BLUE.copy()
+        my_theme.widget_font=font
+        menu = pygame_menu.Menu(300, 400, 'Welcome',theme=my_theme)
         menu.add_text_input('Name :', default='John Doe')
         menu.add_selector('Difficulty :', [('Hard', 1), ('Easy', 2)], onchange=self.set_difficulty)
         menu.add_button('Play', self.new_game)
-        menu.add_button('Quit', pygame_menu.events.EXIT)
+        menu.add_button('Quit', self.notifyQuitRequested)
         self.main_menu = menu
         menu2 = pygame_menu.Menu(300, 300, 'Pause',theme=pygame_menu.themes.THEME_GREEN)
         menu2.add_button('Continue', self.resume_game)
@@ -46,7 +49,6 @@ class MenuMode(GameMode.GameMode):
         self.menu.disable()
         self.menu.reset(1)
         self.notifyLoadLevelRequested("Level1")
-        #self.start_the_game()
 
     def show_MainMenu(self):
         if(self.state.inGame):

@@ -1,17 +1,21 @@
 import pygame
 import src.Const as Const
 import src.GameMode as GameMode
-import src.Block as Block
+import src.Interactables.Block as Block
 import src.Interactables.Unit as Unit
+import src.Interactables.Player as Player
 import src.GameState as GameState
 
 class PlayMode(GameMode.GameMode):
     def __init__(self,state):     
         super().__init__(state)
         self.obstacles = self.make_obstacles()
-        self.player = self.make_player()
+        self.units = self.make_units()
+        self.shoots = pygame.sprite.Group()
+        self.player =  Player.Player((0,0,50,50), 3)
         self.player.set_rects(pygame.Rect(50,50,50,50).center, "center")
         self.state.inGame = True
+        self.commands = []
 
     def processInput(self):
         for event in pygame.event.get():
@@ -21,17 +25,31 @@ class PlayMode(GameMode.GameMode):
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     self.notifyShowMenuRequested()
-                    
+                elif event.key == Player.Player.KEY_ATTACK:
+                    attack = self.player.attack()
+                    if attack!= None:
+                        attack.addObserver(self)
+                        self.shoots.add(attack)
+                else: self.player.add_direction(event.key)
+            elif event.type == pygame.KEYUP:
+                self.player.pop_direction(event.key)
+
     def update(self):
+        #check collision
+        for unit in self.units:
+            unit.update(self.obstacles)
+        for shoot in self.shoots:
+            shoot.update(pygame.sprite.Group(self.obstacles,self.units))
         self.player.update(self.obstacles)
         
     def render(self, window):
         window.fill(Const.BACKGROUND_COLOR)
         self.obstacles.draw(window)
+        for unit in self.units:
+            unit.draw(window)   #todo sort z depth
         self.player.draw(window)
-
-    def make_player(self):
-        return Unit.Unit((0,0,50,50), 3)
+        for unit in self.shoots:
+            unit.draw(window)   #todo sort z depth
 
     def make_obstacles(self):
         """Prepare some obstacles for our player to collide with."""
@@ -42,4 +60,28 @@ class PlayMode(GameMode.GameMode):
             obstacles.append(Block.Block((50+i*50,450)))
             obstacles.append(Block.Block((0,50+50*i)))
         return pygame.sprite.Group(obstacles)
+
+    def make_units(self):
+        """Prepare some enemys."""
+        obstacles = []
+        for i in range(1):
+            obstacle = Unit.Unit((0,0,50,50), 3)
+            obstacle.set_rects(pygame.Rect(i*50+100,i*50+100,50,50).center, "center")
+            obstacles.append(obstacle)
+        return pygame.sprite.Group(obstacles)
+
+    def OnHit(self,sprite,otherSprite):
+        #kill shoot if shoot hits wall
+        if self.shoots.has(sprite) and self.obstacles.has(otherSprite):
+            self.shoots.remove(sprite)
+        #check if non-player-shoot hits player
+        if self.shoots.has(sprite): 
+            if self.player == otherSprite and sprite.parent!=self.player:
+                self.shoots.remove(sprite)
+                pass
+            elif self.units.has(otherSprite) and sprite.parent==self.player:
+                self.shoots.remove(sprite) 
+                pass
+            else:
+                pass
 

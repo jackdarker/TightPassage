@@ -9,7 +9,3 @@ BACKGROUND_COLOR = (40, 40, 40)
 COLOR_KEY = (255, 0, 255)
 CAPTION = "dungeon"
 
-DIRECT_DICT = {pygame.K_LEFT  : (-1, 0),
-               pygame.K_RIGHT : ( 1, 0),
-               pygame.K_UP    : ( 0,-1),
-               pygame.K_DOWN  : ( 0, 1)}

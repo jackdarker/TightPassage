@@ -2,9 +2,13 @@ import os
 import pygame
 import src.Const as Const
 import src.Interactables.Interactable as Interactable
+import src.Interactables.Fireball as Fireball
 
 class Unit(Interactable.Interactable):
+
+    #spritemap of the unit
     SPRITEIMAGE = None
+    ATTACKIMAGE = None
 
     def __init__(self, rect, speed, direction=pygame.K_RIGHT):
         """
@@ -21,9 +25,14 @@ class Unit(Interactable.Interactable):
         if(type(self).SPRITEIMAGE == None):
             type(self).SPRITEIMAGE = pygame.image.load(os.path.join("assets","sprites","skelly.png")).convert()
             type(self).SPRITEIMAGE.set_colorkey(Const.COLOR_KEY)
+        if(type(self).ATTACKIMAGE == None):
+            type(self).ATTACKIMAGE = pygame.Surface((30,30)).convert_alpha()
+            type(self).ATTACKIMAGE.fill((100,0,0))
         self.direction_stack = []  #Held keys in the order they were pressed.
         self.redraw = False  #Force redraw if needed.
         self.image = None
+        self.cd_Atk = 0
+        self.attacking = False
         self.frame  = 0
         self.frames = self.get_frames()
         self.animate_timer = 0.0
@@ -31,6 +40,7 @@ class Unit(Interactable.Interactable):
         self.walkframes = []
         self.walkframe_dict = self.make_frame_dict()
         self.adjust_images()
+        
 
     def draw(self, surface):
         """Draw method seperated out from update."""
@@ -74,10 +84,12 @@ class Unit(Interactable.Interactable):
         if not self.image:
             self.image = self.walkframes[self.frame]
         self.redraw = False
+        #if(self.attacking):
+        #    self.image.blit(type(self).ATTACKIMAGE,pygame.Rect(25,25,30,30))
 
     def add_direction(self, key):
         """Add a pressed direction key on the direction stack."""
-        if key in DIRECT_DICT:
+        if key in Interactable.Interactable.DIRECT_DICT:
             if key in self.direction_stack:
                 self.direction_stack.remove(key)
             self.direction_stack.append(key)
@@ -85,7 +97,7 @@ class Unit(Interactable.Interactable):
 
     def pop_direction(self, key):
         """Pop a released key from the direction stack."""
-        if key in DIRECT_DICT:
+        if key in Interactable.Interactable.DIRECT_DICT:
             if key in self.direction_stack:
                 self.direction_stack.remove(key)
             if self.direction_stack:
@@ -93,18 +105,31 @@ class Unit(Interactable.Interactable):
 
     def update(self, obstacles):
         """Adjust the image and move as needed."""
+        if(self.cd_Atk>0): 
+            self.cd_Atk-=1
+        else:
+            self.attacking = False
         self.adjust_images()
         if self.direction_stack:
             self.movement(obstacles, 0)
             self.movement(obstacles, 1)
 
+    def attack(self):
+        """attack in view direction"""
+        if(self.cd_Atk<=0):
+            self.cd_Atk = Const.FPS
+            self.attacking = True
+            return Fireball.Fireball(self, 10, self.direction)
+        else:
+            return None
+
     def movement(self, obstacles, i):
         """Move player and then check for collisions; adjust as necessary.
         i =0 is x; i=1 is y 
         """
-        direction_vector = DIRECT_DICT[self.direction]
+        direction_vector = Interactable.Interactable.DIRECT_DICT[self.direction]
         self.hitrect[i] += self.speed*direction_vector[i]
-        callback = collide_other(self.hitrect)  #Collidable callback created.
+        callback = self.collide_other(self.hitrect)  #Collidable callback created.
         collisions = pygame.sprite.spritecollide(self, obstacles, False, callback)
         while collisions:
             collision = collisions.pop()
