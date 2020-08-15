@@ -5,7 +5,7 @@
     <ProjectGuid>084ed0e8-07a2-41e4-8921-b73a5154c88a</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>main.py</StartupFile>
+    <StartupFile>src\Tools.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -23,6 +23,9 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="framework.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="scrap\module1.py">
       <SubType>Code</SubType>
     </Compile>
@@ -85,6 +88,15 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="scrap\module12.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="module1.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\Support.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\Tools.py">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

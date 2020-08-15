@@ -2,9 +2,11 @@ import os
 import random
 import pygame
 import src.Const as Const
-import src.Interactables.Interactable as Interactable
+import src.Support as Support
+import src.Interactables.Interactable
+from src.Interactables.Interactable import Interactable
 
-class Block(Interactable.Interactable):
+class Block(Interactable):
     """Something to run head-first into."""
     #Alpha-Image for sprite
     SHADE_MASK = None
@@ -13,11 +15,12 @@ class Block(Interactable.Interactable):
         
         if(type(self).SHADE_MASK == None):
             #convert_alpha since since the block will be shaded with color later
-            type(self).SHADE_MASK = pygame.image.load(os.path.join("assets","sprites","shader.png")).convert_alpha()
-        self.image = self.make_image()
-        rect = self.image.get_rect(topleft=location)
+            type(self).SHADE_MASK = pygame.image.load(Const.resource_path("assets/sprites/shader.png")).convert_alpha()
+        image = self.make_image()
+        rect = image.get_rect(topleft=location)
         rect.move(location)
         super().__init__(rect,pygame.K_RIGHT)
+        self.image = image
 
     def make_image(self):
         """create random colored block"""

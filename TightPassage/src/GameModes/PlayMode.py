@@ -73,15 +73,16 @@ class PlayMode(GameMode.GameMode):
     def OnHit(self,sprite,otherSprite):
         #kill shoot if shoot hits wall
         if self.shoots.has(sprite) and self.obstacles.has(otherSprite):
-            self.shoots.remove(sprite)
-        #check if non-player-shoot hits player
+           sprite.kill()
         if self.shoots.has(sprite): 
+            #check if non-player-shoot hits player
             if self.player == otherSprite and sprite.parent!=self.player:
-                self.shoots.remove(sprite)
-                pass
+                sprite.OnHit(otherSprite)
+
+            #check player shoots hits enemy
             elif self.units.has(otherSprite) and sprite.parent==self.player:
-                self.shoots.remove(sprite) 
-                pass
+                sprite.OnHit(otherSprite) 
+
             else:
                 pass
 

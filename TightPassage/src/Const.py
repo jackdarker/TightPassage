@@ -1,3 +1,4 @@
+import sys, os
 import pygame
 
 #some global constants
@@ -9,3 +10,13 @@ BACKGROUND_COLOR = (40, 40, 40)
 COLOR_KEY = (255, 0, 255)
 CAPTION = "dungeon"
 
+
+def resource_path(relative_path):
+    """ Get the absolute path to the resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)

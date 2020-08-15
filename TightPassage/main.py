@@ -21,8 +21,10 @@ class App(GameModeObserver.GameModeObserver):
         self.state = GameState.GameState()  #game data
  
     def on_init(self):
+        pygame.mixer.pre_init(44100, -16, 2, 512) #if this line is not placed before pygame.init there might be delay on sound, also buffersize should be small
         pygame.init()
-        self.screen = pygame.display.set_mode(Const.WINDOW_SIZE, pygame.HWSURFACE | pygame.DOUBLEBUF )
+        self.screen = pygame.display.set_mode(Const.WINDOW_SIZE, pygame.HWSURFACE | pygame.DOUBLEBUF  ) #| pygame.SCALED??
+        pygame.mixer.init()
         self.clock = pygame.time.Clock()
         self.menumode = MenuMode.MenuMode(self.screen,self.state)
         self.menumode.addObserver(self)

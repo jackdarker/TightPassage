@@ -1,47 +1,63 @@
 import os
 import pygame
 import src.Const as Const
-import src.Interactables.Interactable as Interactable
+import src.Support as Support
+import src.Interactables.Interactable
+from src.Interactables.Interactable import Interactable
+import src.Interactables.Unit as Unit
+from src.Interactables.Unit import Unit
 
-class Fireball(Interactable.Interactable):
-    #spritemap of the unit
+#import src.Interactables.Interactable
+#from src.Interactables.Interactable import Interactable
+
+class Fireball(Unit):
     SPRITEIMAGE = None
+
     def __init__(self, creator, speed, direction=pygame.K_RIGHT):
         """
         Arguments are a rect representing the Player's location and
         dimension, the speed(in pixels/frame) of the Player, and the Player's
         starting direction (given as a key-constant).
         """
-        rect = creator.rect
-        super().__init__(rect,direction)
-        
-        hit_size = int(0.6*self.rect.width), int(0.4*self.rect.height)
+        rect = pygame.Rect((0,0), (32,32))  #imagesize
+        rect.center = creator.rect.center
+        if(type(self).SPRITEIMAGE == None):
+            type(self).SPRITEIMAGE = pygame.image.load(Const.resource_path("assets/sprites/fireball1.png")).convert_alpha()
+        super().__init__( rect, speed, direction)
+        hit_size = int(0.8*self.rect.width), int(0.8*self.rect.height)
         self.hitrect = pygame.Rect((0,0), hit_size)
         self.hitrect.midbottom = self.rect.midbottom
         self.speed = speed
         self.parent = creator
+        self.direction_offset = Interactable.DIRECT_DICT[direction]
+        
+            #type(self).SPRITEIMAGE.set_colorkey(Const.COLOR_KEY)
+            #type(self).SPRITEIMAGE = pygame.Surface((30,30)).convert_alpha()
+            #type(self).SPRITEIMAGE.fill((100,0,0))
 
-        if(type(self).SPRITEIMAGE == None):
-            type(self).SPRITEIMAGE = pygame.Surface((30,30)).convert_alpha()
-            type(self).SPRITEIMAGE.fill((100,0,0))
-        self.redraw = False  #Force redraw if needed.
-        self.image = type(self).SPRITEIMAGE
-
-    def draw(self, surface):
-        """Draw method seperated out from update."""
-        surface.blit(self.image, self.rect)
-
-    def update(self, obstacles):
-        """Adjust the image and move as needed."""
-
-        self.movement(obstacles, 0)
-        self.movement(obstacles, 1)
+    def make_frame_dict(self):
+        """
+        Create a dictionary of direction keys to frames. We can use
+        transform functions to reduce the size of the sprite sheet we need.
+        """
+        indices = [[0,0],[1,0],[2,0],[3,0],[4,0]]
+        frames = Support.get_images(type(self).SPRITEIMAGE, indices, self.rect.size)
+        self.walkframe_dict = { pygame.K_RIGHT : [frames[0],frames[1],frames[2],frames[3],frames[4]],
+            pygame.K_LEFT :[frames[0],frames[1],frames[2],frames[3],frames[4]],
+            pygame.K_UP :[frames[0],frames[1],frames[2],frames[3],frames[4]],
+            pygame.K_DOWN : [frames[0],frames[1],frames[2],frames[3],frames[4]] }
+        indices = [[0,1],[1,1],[2,1]]
+        frames = Support.get_images(type(self).SPRITEIMAGE, indices, self.rect.size)
+        self.dieframe_dict = { pygame.K_RIGHT : [frames[0],frames[1],frames[2]],
+            pygame.K_LEFT :[frames[0],frames[1],frames[2]],
+            pygame.K_UP :[frames[0],frames[1],frames[2]],
+            pygame.K_DOWN : [frames[0],frames[1],frames[2]] }
 
     def movement(self, obstacles, i):
         """Move player and then check for collisions; adjust as necessary.
         i =0 is x; i=1 is y 
         """
-        direction_vector = Interactable.Interactable.DIRECT_DICT[self.direction]
+        direction_vector = Interactable.DIRECT_DICT[self.direction]
         self.hitrect[i] += self.speed*direction_vector[i]
         callback = self.collide_other(self.hitrect)  #Collidable callback created.
         collisions = pygame.sprite.spritecollide(self, obstacles, False, callback)
@@ -49,3 +65,10 @@ class Fireball(Interactable.Interactable):
             collision = collisions.pop()
             self.notifyOnHit(collision)
         self.rect.midbottom = self.hitrect.midbottom
+
+    def OnHit(self,otherSprite):
+        """hit someone and cause damage"""
+        if(self.start_dieing()):
+            otherSprite.damage(1,self.direction)
+            self.direction_offset = pygame.Vector2(0,0)
+        

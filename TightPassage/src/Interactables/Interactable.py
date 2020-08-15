@@ -1,23 +1,21 @@
 import pygame
 
-
-def get_images(sheet, frame_indices, size):
-    """Get desired images from a sprite sheet image."""
-    frames = []
-    for cell in frame_indices:
-        frame_rect = ((size[0]*cell[0],size[1]*cell[1]), size)
-        frames.append(sheet.subsurface(frame_rect))
-    return frames
-
 class Interactable(pygame.sprite.Sprite):
 
-    #map of movementkeys to movement direction
-    DIRECT_DICT = {pygame.K_LEFT  : (-1, 0),
-               pygame.K_RIGHT : ( 1, 0),
-               pygame.K_UP    : ( 0,-1),
-               pygame.K_DOWN  : ( 0, 1)}
+    #using channels for different sound effects to be able to use channel.get_busy 
+    SfxCh_Move = 1
+    SfxCh_Attack = 2
+    SfxCh_Hit = 3
 
+    #map of movementkeys to movement direction
+    DIRECT_DICT = {pygame.K_LEFT  : pygame.Vector2(-1, 0),
+               pygame.K_RIGHT : pygame.Vector2( 1, 0),
+               pygame.K_UP    : pygame.Vector2( 0,-1),
+               pygame.K_DOWN  : pygame.Vector2( 0, 1)}
+
+    #codes for self.status
     STAT_ALIVE = "alive"
+    STAT_DIEING = "dieing"
     STAT_DEAD = "dead"
 
     def __init__(self,rect,direction):
@@ -28,6 +26,12 @@ class Interactable(pygame.sprite.Sprite):
         self.direction = direction
         self.old_direction = None  #The Players previous direction every frame.
         self.parent = None
+        self.redraw = False  #Force redraw if needed.
+        self.frame  = 0
+        self.animate_timer = 0.0
+        self.animate_fps = 7.0  #todo animationdataclass
+        self.die_timer = 0.0
+        self.image = None   # the image to render in next frame
 
     def set_rects(self, value, attribute="topleft"):
         """
