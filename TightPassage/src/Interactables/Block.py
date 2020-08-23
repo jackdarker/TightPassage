@@ -24,7 +24,7 @@ class Block(Interactable):
 
     def make_image(self):
         """create random colored block"""
-        image = pygame.Surface((50,50)).convert_alpha()
+        image = pygame.Surface((8,8)).convert_alpha()   #todo image size from leveldata
         image.fill([random.randint(0, 255) for _ in range(3)])
         image.blit(type(self).SHADE_MASK, (0,0))
         return image

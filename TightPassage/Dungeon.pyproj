@@ -5,7 +5,7 @@
     <ProjectGuid>084ed0e8-07a2-41e4-8921-b73a5154c88a</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>src\Tools.py</StartupFile>
+    <StartupFile>main.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -91,6 +91,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="module1.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\Layers\OgmoImporter.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\Support.py">

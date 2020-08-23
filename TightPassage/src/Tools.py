@@ -85,7 +85,9 @@ class TileMapCreator():
 
 if __name__ == '__main__':
     creator = TileMapCreator()
-    creator.SpritesToTilemap(abspath("C:/tmp/Fox"))
+    #arg should be path to directory like "C:/tmp/Fox"
+    for arg in sys.argv:
+        creator.SpritesToTilemap(abspath(arg))
     pass
 
 

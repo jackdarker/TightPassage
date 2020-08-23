@@ -12,7 +12,9 @@ CAPTION = "dungeon"
 
 
 def resource_path(relative_path):
-    """ Get the absolute path to the resource, works for dev and for PyInstaller """
+    """ Get the absolute path to the resource, works for dev and for PyInstaller 
+    resource_path("assets/sprites/shader.png")
+    """
     try:
         # PyInstaller creates a temp folder and stores path in _MEIPASS
         base_path = sys._MEIPASS
