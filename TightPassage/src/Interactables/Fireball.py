@@ -6,6 +6,9 @@ import src.Interactables.Interactable
 from src.Interactables.Interactable import Interactable
 import src.Interactables.Unit as Unit
 from src.Interactables.Unit import Unit
+import src.Components.ComponentGraphics
+from src.Components.ComponentGraphics import UnitGraphics
+from src.Components.ComponentGraphics import AnimData
 
 #import src.Interactables.Interactable
 #from src.Interactables.Interactable import Interactable
@@ -30,7 +33,55 @@ class Fireball(Unit):
         self.speed = speed
         self.parent = creator
         self.direction_offset = Interactable.DIRECT_DICT[direction]
-        
+
+        anim = AnimData()
+        name="walkright"
+        anim.fps=7
+        indices = [[0,0],[1,0],[2,0],[3,0],[4,0]]
+        anim.frames = Support.get_images(type(self).SPRITEIMAGE, indices, self.rect.size)
+        self.cGraphic.addAnimation(name,anim)
+        #
+        name="walkleft"
+        #anim.frames = [pygame.transform.flip(frame, True, False) 
+        #               for frame in Support.get_images(type(self).SPRITEIMAGE, indices, self.rect.size)]
+        self.cGraphic.addAnimation(name,anim)
+        name="walkup"
+        self.cGraphic.addAnimation(name,anim)
+        name="walkdown"
+        self.cGraphic.addAnimation(name,anim)
+        name="idle"
+        self.cGraphic.addAnimation(name,anim)
+        #
+        anim = AnimData()
+        name="dieright"
+        anim.fps=7
+        indices = [[0,1],[1,1],[2,1]]
+        anim.frames = Support.get_images(type(self).SPRITEIMAGE, indices, self.rect.size)
+        self.cGraphic.addAnimation(name,anim)
+        #
+        anim = AnimData()
+        name="dieleft"
+        anim.fps=7
+        indices = [[0,1],[1,1],[2,1]]
+        anim.frames = [pygame.transform.flip(frame, True, False) 
+                       for frame in Support.get_images(type(self).SPRITEIMAGE, indices, self.rect.size)]
+        self.cGraphic.addAnimation(name,anim)
+        #
+        anim = AnimData()
+        name="dieup"
+        anim.fps=7
+        indices = [[0,1],[1,1],[2,1]]
+        anim.frames = [pygame.transform.rotate(frame, 90) 
+                       for frame in Support.get_images(type(self).SPRITEIMAGE, indices, self.rect.size)]
+        self.cGraphic.addAnimation(name,anim)
+        #
+        anim = AnimData()
+        name="diedown"
+        anim.fps=7
+        indices = [[0,1],[1,1],[2,1]]
+        anim.frames = [pygame.transform.rotate(frame, -90) 
+                       for frame in Support.get_images(type(self).SPRITEIMAGE, indices, self.rect.size)]
+        self.cGraphic.addAnimation(name,anim)
             #type(self).SPRITEIMAGE.set_colorkey(Const.COLOR_KEY)
             #type(self).SPRITEIMAGE = pygame.Surface((30,30)).convert_alpha()
             #type(self).SPRITEIMAGE.fill((100,0,0))
@@ -53,8 +104,10 @@ class Fireball(Unit):
             pygame.K_UP :[frames[0],frames[1],frames[2]],
             pygame.K_DOWN : [frames[0],frames[1],frames[2]] }
 
+        self.idleframe_dict = self.walkframe_dict
+
     def movement(self, obstacles, i):
-        """Move player and then check for collisions; adjust as necessary.
+        """
         i =0 is x; i=1 is y 
         """
         direction_vector = Interactable.DIRECT_DICT[self.direction]
@@ -69,6 +122,8 @@ class Fireball(Unit):
     def OnHit(self,otherSprite):
         """hit someone and cause damage"""
         if(self.start_dieing()):
-            otherSprite.damage(1,self.direction)
+            _func = getattr(otherSprite,"damage",None)
+            if(_func!=None):
+                _func(1,self.direction)
             self.direction_offset = pygame.Vector2(0,0)
         

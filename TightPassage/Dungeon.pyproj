@@ -29,6 +29,18 @@
     <Compile Include="scrap\module1.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="src\Components\Camera.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\Components\ComponentGraphics.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\Components\UpdatableObj.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\GameModes\MovieMode.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="src\Interactables\Block.py">
       <SubType>Code</SubType>
     </Compile>
@@ -72,6 +84,9 @@
     <Compile Include="src\Interactables\Interactable.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="src\Interactables\Imp.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="src\Interactables\Player.py">
       <SubType>Code</SubType>
     </Compile>
@@ -102,6 +117,12 @@
     <Compile Include="src\Tools.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="src\TopDown\Dungeon.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\Vector.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="Global|PythonCore|3.6" />
@@ -113,6 +134,8 @@
     <Folder Include="src\Layers\" />
     <Folder Include="src\Interactables\" />
     <Folder Include="src\GameModes\" />
+    <Folder Include="src\Components\" />
+    <Folder Include="src\TopDown\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

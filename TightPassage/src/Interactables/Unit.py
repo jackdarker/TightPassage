@@ -4,6 +4,8 @@ import src.Const as Const
 import src.Support as Support
 import src.Interactables.Interactable
 from src.Interactables.Interactable import Interactable
+import src.Components.ComponentGraphics
+from src.Components.ComponentGraphics import UnitGraphics
 
 class Unit(Interactable):
 
@@ -12,6 +14,7 @@ class Unit(Interactable):
     ATTACKIMAGE = None
     HITSOUND = None
     MOVESOUND = None
+    DEATHSOUND = None
 
     def __init__(self, rect, speed, direction=pygame.K_RIGHT):
         """
@@ -20,7 +23,7 @@ class Unit(Interactable):
         starting direction (given as a key-constant).
         """
         super().__init__(rect,direction)
-        
+        self.image = pygame.Surface((rect.width,rect.height),pygame.SRCALPHA)
         hit_size = int(0.6*self.rect.width), int(0.4*self.rect.height)
         self.hitrect = pygame.Rect((0,0), hit_size)
         self.hitrect.midbottom = self.rect.midbottom
@@ -39,21 +42,27 @@ class Unit(Interactable):
         if(type(self).MOVESOUND == None):
             type(self).MOVESOUND = pygame.mixer.Sound(Const.resource_path("assets/sounds/walk3.wav"))
             type(self).MOVESOUND.set_volume(1.0)
+        if(type(self).DEATHSOUND == None):
+            type(self).DEATHSOUND = pygame.mixer.Sound(Const.resource_path("assets/sounds/death.wav"))
+            type(self).DEATHSOUND.set_volume(1.0)
         self.direction_stack = []  #Held keys in the order they were pressed.
         self.direction_offset = pygame.Vector2(0,0)
         self.cd_Atk = 0 #cooldown attack
+        self.timer_Atk = 0
         self.attacking = False
-        self.walkframes = []
-        self.dieframes = []
-        self.idleframes = []
-        self.make_frame_dict()
-        self.adjust_images()
-        
+        self.cGraphic = UnitGraphics(self)
+        if(False):
+            self.attackframes = []
+            self.attackframe_dict = []
+            self.walkframes = []
+            self.dieframes = []
+            self.idleframes = []
+            self.make_frame_dict()
+            self.adjust_images()
 
     def draw(self, surface):
-        """Draw method seperated out from update."""
-        self.adjust_images()
-        surface.blit(self.image, self.rect)
+        """draws the image"""
+        self.cGraphic.draw(self.image)   #self.cGraphic.draw(surface)
 
     def make_frame_dict(self):
         """
@@ -71,6 +80,7 @@ class Unit(Interactable):
                                pygame.transform.flip(frames[2], True, False)] }
         self.dieframe_dict = self.walkframe_dict
         self.idleframe_dict = self.walkframe_dict
+        self.attackframe_dict = self.walkframe_dict
 
     def adjust_images(self):
         """Update the sprite's walkframes as the sprite's direction changes."""
@@ -78,6 +88,7 @@ class Unit(Interactable):
             self.walkframes = self.walkframe_dict[self.direction]
             self.dieframes = self.dieframe_dict[self.direction]
             self.idleframes = self.idleframe_dict[self.direction]
+            self.attackframes = self.attackframe_dict[self.direction]
             self.old_direction = self.direction
             self.redraw = True
         self.make_image()
@@ -92,7 +103,10 @@ class Unit(Interactable):
             elif self.direction_stack:
                 self.frame = (self.frame+1)%len(self.walkframes)
                 self.image = self.walkframes[self.frame]
-            elif len(self.idleframes)>0:
+            elif (self.attacking==True and len(self.attackframes)>0):
+                self.frame = (self.frame+1)%len(self.attackframes)
+                self.image = self.walkframes[self.frame]    #todo attack should not loop
+            elif len(self.idleframes)>0: #fallback to idle
                 self.frame = (self.frame+1)%len(self.idleframes)
                 self.image = self.idleframes[self.frame]
             self.animate_timer = now
@@ -120,18 +134,23 @@ class Unit(Interactable):
         """Adjust the image and move as needed."""
         now = pygame.time.get_ticks()
         if(self.status == Interactable.STAT_DIEING):
-            if (self.frame+1 >= self.die_timer): self.OnDeath()
-        if(self.health<=0):
+            self.frame+=1
+            if ( self.frame>= self.die_timer): self.OnDeath()
+        elif(self.health<=0):
             if(self.status == Interactable.STAT_ALIVE): self.start_dieing()
             return
-        if(self.cd_Atk>0): 
-            self.cd_Atk-=1
         else:
-            self.attacking = False
-        
-        if self.direction_stack or self.direction_offset != pygame.Vector2(0,0):
-            self.movement(obstacles, 0)
-            self.movement(obstacles, 1)
+            if(self.cd_Atk>0): 
+                self.cd_Atk-=1
+            if(self.timer_Atk>0): 
+                self.timer_Atk-=1
+            else:
+                self.attacking = False
+            
+            if self.direction_stack or self.direction_offset != pygame.Vector2(0,0):
+                self.movement(obstacles, 0)
+                self.movement(obstacles, 1)
+        self.cGraphic.update()
 
     def start_dieing(self):
         """ triggers the die-sequence
@@ -141,7 +160,8 @@ class Unit(Interactable):
             self.status = Interactable.STAT_DIEING
             self.frame = 0
             self.redraw = True
-            self.die_timer = len(self.dieframes)
+            self.die_timer = 10#len(self.dieframes)
+            pygame.mixer.Channel(Interactable.SfxCh_Hit).play(type(self).DEATHSOUND)
             return True
         return False
 
@@ -152,6 +172,7 @@ class Unit(Interactable):
         """attack in view direction"""
         if(self.cd_Atk<=0):
             self.cd_Atk = Const.FPS
+            self.timer_Atk = Const.FPS // 2 #todo depends on attack
             self.attacking = True
             #return Fireball.Fireball(self, 10, self.direction)
         else:
@@ -162,7 +183,7 @@ class Unit(Interactable):
         self.health-=amount
         pygame.mixer.Channel(Interactable.SfxCh_Hit).play(type(self).HITSOUND)
         self.direction_offset = Interactable.DIRECT_DICT[direction]
-        self.direction_offset = self.direction_offset.elementwise()*10  #push in oposite direction on hit
+        self.direction_offset = self.direction_offset.elementwise()*4*amount  #push in oposite direction on hit
         
 
     def movement(self, obstacles, i):

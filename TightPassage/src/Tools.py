@@ -7,8 +7,6 @@ from stat import *
 
 class TileMapCreator():
     def __init__(self):
-        pygame.init()
-        screen = pygame.display.set_mode((640,480), pygame.HWSURFACE | pygame.DOUBLEBUF  )
         pass
 
     def walktree(self,top, callback):
@@ -23,7 +21,7 @@ class TileMapCreator():
                 callback(pathname,True)
                 self.walktree(pathname, callback)
             elif S_ISREG(mode):
-                # It's a file, call the callback function
+                # It's a file, call the callback function. Ignore files in basedir
                 if(top!=self.basedir): callback(pathname,False)
             else:
                 # Unknown file type, print a message
@@ -42,7 +40,7 @@ class TileMapCreator():
         self.FileCounter=0
         self.basedir = basedir
         self.walktree(basedir, self.visitfile)
-        data = {}
+        data = []
         animName = ""
         countAnims = len(self.allfiles)
         
@@ -60,16 +58,11 @@ class TileMapCreator():
                 textureTile.blit(Sprite,(Sprite.get_width()*x,Sprite.get_height()*y))
                 x+=1
             y+=1
-            data[animName] = {"size":size,"count":x}    #build a anim-description-block
-        filename = os.path.basename(basedir)+".png"
-        pygame.image.save(textureTile,abspath(os.path.join(basedir,filename)))
-        #write the anim-description-blocks
-        filename = os.path.basename(basedir)+".json"
-        with open(abspath(os.path.join(basedir,filename)), 'w') as outfile:
-            json.dump(data, outfile)
+            data.append({"animName": animName ,"size":size,"count":x})    #build a anim-description-block
+        return (basedir,textureTile,data)
 
     def visitfile(self,file,isDir):
-        print(file)
+        #print(file)
         if(isDir==True):
             self.dir=file
             self.FileCounter=0
@@ -83,11 +76,21 @@ class TileMapCreator():
             self.FileCounter+=1
             if(self.FileCounter>self.maxFiles): self.maxFiles=self.FileCounter
 
+    def saveDataToFile(self,basedir,textureData,infoData):
+        filename = os.path.basename(basedir)+".png"
+        pygame.image.save(textureTile,abspath(os.path.join(basedir,filename)))
+        #write the anim-description-blocks
+        filename = os.path.basename(basedir)+".json"
+        with open(abspath(os.path.join(basedir,filename)), 'w') as outfile:
+            json.dump(infoData, outfile)
+
 if __name__ == '__main__':
+    pygame.init()
+    screen = pygame.display.set_mode((640,480), pygame.HWSURFACE | pygame.DOUBLEBUF  )
     creator = TileMapCreator()
     #arg should be path to directory like "C:/tmp/Fox"
     for arg in sys.argv:
-        creator.SpritesToTilemap(abspath(arg))
+        creator.saveDataToFile(creator.SpritesToTilemap(abspath(arg)))
     pass
 
 

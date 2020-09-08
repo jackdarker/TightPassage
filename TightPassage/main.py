@@ -7,6 +7,7 @@ import src.GameModeObserver as GameModeObserver
 import src.GameModes.PlayMode as PlayMode
 import src.GameModes.MessageMode as MessageMode
 import src.GameModes.MenuMode as MenuMode
+import src.GameModes.MovieMode as MovieMode
 import src.GameState as GameState
 
 class App(GameModeObserver.GameModeObserver):
@@ -28,6 +29,12 @@ class App(GameModeObserver.GameModeObserver):
         self.clock = pygame.time.Clock()
         self.menumode = MenuMode.MenuMode(self.screen,self.state)
         self.menumode.addObserver(self)
+        intro = MovieMode.SceneData()
+        intro.loadImageStrip(Const.resource_path("assets\sprites\Movie"),24)
+        self.moviemode = MovieMode.MovieMode(intro)
+        self.moviemode.addObserver(self)
+        #self.moviemode.show()
+        self.menumode.show_MainMenu()
 
     def on_loop(self):
         """update all modes"""
@@ -35,7 +42,9 @@ class App(GameModeObserver.GameModeObserver):
         if(self.menumode.inMenu()):
             self.menumode.processInput()
             self.menumode.update()
-            
+        elif(self.moviemode.enabled):
+            self.moviemode.processInput()
+            self.moviemode.update()
         elif(self.playmode!=None):
             self.playmode.processInput()
             self.playmode.update()
@@ -44,6 +53,8 @@ class App(GameModeObserver.GameModeObserver):
         """render all modes"""
         if(self.playmode!=None):
             self.playmode.render(self.screen)
+        elif(self.moviemode.enabled):
+            self.moviemode.render(self.screen)
         self.menumode.render(self.screen)
         self.display_fps()
         pygame.display.flip()

@@ -24,7 +24,9 @@ class MenuMode(GameMode.GameMode):
         menu2.add_button('Continue', self.resume_game)
         menu2.add_button('Back to Start', self.main_menu)
         self.pause_menu = menu2
-        self.show_MainMenu()
+        self.menu = self.main_menu
+        self.menu.disable()
+        #self.show_MainMenu()
 
     def inMenu(self):
         return(self.menu.is_enabled())
