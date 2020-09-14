@@ -4,8 +4,9 @@ import src.Const as Const
 import src.Support as Support
 import src.Interactables.Unit
 from src.Interactables.Unit import Unit
-import src.Interactables.Fireball
 from src.Interactables.Fireball import Fireball
+from src.Interactables.Damager import Damager
+from src.Interactables.Damager import DamagerInfo
 import src.Components.ComponentGraphics
 from src.Components.ComponentGraphics import UnitGraphics
 from src.Components.ComponentGraphics import AnimData
@@ -25,12 +26,19 @@ class Player(Unit):
         SPRITEIMAGE = pygame.image.load(Const.resource_path("assets/sprites/clotharmor.png")).convert_alpha()
         SWORDIMAGE = pygame.image.load(Const.resource_path("assets/sprites/sword1.png")).convert_alpha()
         SPRITEIMAGE.blit(SWORDIMAGE,(0,0))
-
         super().__init__( _rect, speed, direction)
 
-        hit_size = int(0.4*self.rect.width), int(0.6*self.rect.height)
+        hit_size = int(self.rect.width//2), int(self.rect.height//2)
         self.hitrect = pygame.Rect((0,0), hit_size)
-        self.hitrect.midbottom = self.rect.midbottom
+        self.hitrect.center = self.rect.center
+        
+        if(Const.DRAW_COLLIDERS):   #just for visualisation:
+            self.hitboximage = pygame.Surface(self.rect.size).convert_alpha()   #todo image size from leveldata
+            self.hitboximage.fill((0,255,0,0),self.rect)
+            self.hitboximage.fill((0,255,0,60),self.hitrect)
+
+        self.canUseDoors =True
+
         #build animations
         anim = AnimData()
         name="idleright"
@@ -108,59 +116,20 @@ class Player(Unit):
         self.cGraphic.addAnimation(name,anim)
         SPRITEIMAGE = None
 
-    def make_frame_dict(self):
-        """
-        Create a dictionary of direction keys to frames. We can use
-        transform functions to reduce the size of the sprite sheet we need.
-        """
-        indices = [[1,1],[2,1],[3,1],[4,1],[5,1],[6,1]]
-        frames = Support.get_images(type(self).SPRITEIMAGE, indices, self.rect.size)
-        self.walkframe_dict = { pygame.K_RIGHT : [frames[0],frames[1],frames[2],frames[3],frames[4],frames[5]],
-            pygame.K_LEFT :[pygame.transform.flip(frames[0], True, False),
-                            pygame.transform.flip(frames[1], True, False),
-                            pygame.transform.flip(frames[2], True, False),
-                            pygame.transform.flip(frames[3], True, False),
-                            pygame.transform.flip(frames[4], True, False),
-                            pygame.transform.flip(frames[5], True, False)],
-            pygame.K_UP :   [frames[0],frames[1],frames[2],frames[3],frames[4],frames[5]],
-            pygame.K_DOWN : [frames[0],frames[1],frames[2],frames[3],frames[4],frames[5]] }
-
-        indices = [[0,6],[1,6],[2,6],[3,6],[4,6],[5,6],[6,6]]
-        frames = Support.get_images(type(self).SPRITEIMAGE, indices, self.rect.size)
-        self.attackframe_dict = { pygame.K_RIGHT : [frames[0],frames[1],frames[2],frames[3],frames[4],frames[5],frames[6]],
-            pygame.K_LEFT :[pygame.transform.flip(frames[0], True, False),
-                            pygame.transform.flip(frames[1], True, False),
-                            pygame.transform.flip(frames[2], True, False),
-                            pygame.transform.flip(frames[3], True, False),
-                            pygame.transform.flip(frames[4], True, False),
-                            pygame.transform.flip(frames[5], True, False),
-                            pygame.transform.flip(frames[6], True, False)],
-            pygame.K_UP :   [frames[0],frames[1],frames[2],frames[3],frames[4],frames[5],frames[6]],
-            pygame.K_DOWN : [frames[0],frames[1],frames[2],frames[3],frames[4],frames[5],frames[6]]}
-
-        indices = [[0,0],[1,0],[2,0],[3,0]]
-        frames = Support.get_images(type(self).SPRITEIMAGE, indices, self.rect.size)
-        self.idleframe_dict = { pygame.K_RIGHT : [frames[0],frames[1],frames[2],frames[3]],
-            pygame.K_LEFT :[pygame.transform.flip(frames[0], True, False),
-                            pygame.transform.flip(frames[1], True, False),
-                            pygame.transform.flip(frames[2], True, False),
-                            pygame.transform.flip(frames[3], True, False)],
-            pygame.K_UP :   [frames[0],frames[1],frames[2],frames[3]],
-            pygame.K_DOWN : [frames[0],frames[1],frames[2],frames[3]] }
-
-        indices = [[0,1],[1,1],[2,1]]
-        frames = Support.get_images(type(self).SPRITEIMAGE, indices, self.rect.size)
-        self.dieframe_dict = { pygame.K_RIGHT : [frames[0],frames[1],frames[2]],
-            pygame.K_LEFT :[frames[0],frames[1],frames[2]],
-            pygame.K_UP :[frames[0],frames[1],frames[2]],
-            pygame.K_DOWN : [frames[0],frames[1],frames[2]] }
+    def draw(self, surface):
+        """draws the image"""
+        super().draw(surface)
+        if(Const.DRAW_COLLIDERS):   #just for visualisation:
+            self.image.blit(self.hitboximage,(0,0))
 
     def attack(self):
         """attack in view direction"""
-        if(self.cd_Atk<=0):
-            self.cd_Atk = Const.FPS
+        if(self.coolDown_Attack<=0):
+            self.coolDown_Attack = Const.FPS
             self.timer_Atk = Const.FPS // 2 #todo depends on attack
             self.attacking = True
-            return Fireball(self, 10, self.direction)
+
+            return Damager(self,DamagerInfo(self.direction, Const.FPS//2,1,(16,32),(28,0)))
+            #return Fireball(self, 10, self.direction)
         else:
             return None

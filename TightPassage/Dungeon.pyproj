@@ -29,10 +29,22 @@
     <Compile Include="scrap\module1.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="src\AI.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="src\Components\Camera.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\Components\ComponentGraphics.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\Components\Pool.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\Components\ResourceManager.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\Components\TiledImporter.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\Components\UpdatableObj.py">
@@ -78,6 +90,9 @@
     <Compile Include="src\GameState.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="src\Interactables\Damager.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="src\Interactables\Fireball.py">
       <SubType>Code</SubType>
     </Compile>
@@ -91,6 +106,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\Interactables\Unit.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\Interactables\Warp.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\Layer.py">

@@ -14,12 +14,14 @@ class MenuMode(GameMode.GameMode):
         font = pygame_menu.font.FONT_OPEN_SANS
         my_theme = pygame_menu.themes.THEME_BLUE.copy()
         my_theme.widget_font=font
+        #mainmenu
         menu = pygame_menu.Menu(300, 400, 'Welcome',theme=my_theme)
         menu.add_text_input('Name :', default='John Doe')
         menu.add_selector('Difficulty :', [('Hard', 1), ('Easy', 2)], onchange=self.set_difficulty)
         menu.add_button('Play', self.new_game)
         menu.add_button('Quit', self.notifyQuitRequested)
         self.main_menu = menu
+        #pausemenu
         menu2 = pygame_menu.Menu(300, 300, 'Pause',theme=pygame_menu.themes.THEME_GREEN)
         menu2.add_button('Continue', self.resume_game)
         menu2.add_button('Back to Start', self.main_menu)
@@ -50,7 +52,7 @@ class MenuMode(GameMode.GameMode):
     def new_game(self):
         self.menu.disable()
         self.menu.reset(1)
-        self.notifyLoadLevelRequested("Level1")
+        self.notifyLoadLevelRequested("Level0")
 
     def show_MainMenu(self):
         if(self.state.inGame):

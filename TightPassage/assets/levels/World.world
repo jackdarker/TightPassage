@@ -1,0 +1,48 @@
+{
+    "maps": [
+        {
+            "fileName": "Level0.tmx",
+            "height": 640,
+            "width": 640,
+            "x": 639,
+            "y": 0
+        },
+        {
+            "fileName": "Level1.tmx",
+            "height": 512,
+            "width": 512,
+            "x": 1150,
+            "y": 0
+        },
+        {
+            "fileName": "Level2.tmx",
+            "height": 512,
+            "width": 512,
+            "x": 125,
+            "y": 0
+        },
+        {
+            "fileName": "Level3.tmx",
+            "height": 512,
+            "width": 512,
+            "x": 636,
+            "y": -512
+        },
+        {
+            "fileName": "Level4.tmx",
+            "height": 512,
+            "width": 512,
+            "x": 1147,
+            "y": -512
+        },
+        {
+            "fileName": "Level5.tmx",
+            "height": 512,
+            "width": 512,
+            "x": 122,
+            "y": -512
+        }
+    ],
+    "onlyShowAdjacentMaps": false,
+    "type": "world"
+}

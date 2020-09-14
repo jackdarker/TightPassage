@@ -29,8 +29,7 @@ class Fireball(Unit):
         super().__init__( rect, speed, direction)
         hit_size = int(0.8*self.rect.width), int(0.8*self.rect.height)
         self.hitrect = pygame.Rect((0,0), hit_size)
-        self.hitrect.midbottom = self.rect.midbottom
-        self.speed = speed
+        self.hitrect.center = self.rect.center
         self.parent = creator
         self.direction_offset = Interactable.DIRECT_DICT[direction]
 
@@ -82,48 +81,29 @@ class Fireball(Unit):
         anim.frames = [pygame.transform.rotate(frame, -90) 
                        for frame in Support.get_images(type(self).SPRITEIMAGE, indices, self.rect.size)]
         self.cGraphic.addAnimation(name,anim)
-            #type(self).SPRITEIMAGE.set_colorkey(Const.COLOR_KEY)
-            #type(self).SPRITEIMAGE = pygame.Surface((30,30)).convert_alpha()
-            #type(self).SPRITEIMAGE.fill((100,0,0))
 
-    def make_frame_dict(self):
-        """
-        Create a dictionary of direction keys to frames. We can use
-        transform functions to reduce the size of the sprite sheet we need.
-        """
-        indices = [[0,0],[1,0],[2,0],[3,0],[4,0]]
-        frames = Support.get_images(type(self).SPRITEIMAGE, indices, self.rect.size)
-        self.walkframe_dict = { pygame.K_RIGHT : [frames[0],frames[1],frames[2],frames[3],frames[4]],
-            pygame.K_LEFT :[frames[0],frames[1],frames[2],frames[3],frames[4]],
-            pygame.K_UP :[frames[0],frames[1],frames[2],frames[3],frames[4]],
-            pygame.K_DOWN : [frames[0],frames[1],frames[2],frames[3],frames[4]] }
-        indices = [[0,1],[1,1],[2,1]]
-        frames = Support.get_images(type(self).SPRITEIMAGE, indices, self.rect.size)
-        self.dieframe_dict = { pygame.K_RIGHT : [frames[0],frames[1],frames[2]],
-            pygame.K_LEFT :[frames[0],frames[1],frames[2]],
-            pygame.K_UP :[frames[0],frames[1],frames[2]],
-            pygame.K_DOWN : [frames[0],frames[1],frames[2]] }
-
-        self.idleframe_dict = self.walkframe_dict
-
-    def movement(self, obstacles, i):
-        """
-        i =0 is x; i=1 is y 
-        """
+    def movement(self, i):
+        """i =0 is x; i=1 is y """
         direction_vector = Interactable.DIRECT_DICT[self.direction]
         self.hitrect[i] += self.speed*direction_vector[i]
+        self.rect.center = self.hitrect.enter
         callback = self.collide_other(self.hitrect)  #Collidable callback created.
-        collisions = pygame.sprite.spritecollide(self, obstacles, False, callback)
+        collisions = pygame.sprite.spritecollide(self, self.levelData.units, False, callback)
         while collisions:
             collision = collisions.pop()
             self.notifyOnHit(collision)
-        self.rect.midbottom = self.hitrect.midbottom
+            return
+        collisions = pygame.sprite.spritecollide(self, self.levelData.obstacles, False, callback)
+        while collisions:
+            collision = collisions.pop()
+            self.notifyOnHit(collision)
+            return
+        
 
     def OnHit(self,otherSprite):
         """hit someone and cause damage"""
-        if(self.start_dieing()):
+        if(self.start_dieing()): #only react on the first hit
             _func = getattr(otherSprite,"damage",None)
             if(_func!=None):
                 _func(1,self.direction)
             self.direction_offset = pygame.Vector2(0,0)
-        

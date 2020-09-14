@@ -21,7 +21,7 @@ class Imp(Unit):
         
         hit_size = int(0.4*self.rect.width), int(0.6*self.rect.height)
         self.hitrect = pygame.Rect((0,0), hit_size)
-        self.hitrect.midbottom = self.rect.midbottom
+        self.hitrect.center = self.rect.center
         #build animations
         anim = AnimData()
         name="idleright"

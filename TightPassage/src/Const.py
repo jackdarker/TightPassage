@@ -10,6 +10,8 @@ BACKGROUND_COLOR = (40, 40, 40)
 COLOR_KEY = (255, 0, 255)
 CAPTION = "dungeon"
 
+#debug-tools
+DRAW_COLLIDERS = False  # hitrects and colliders are drawn on screen
 
 def resource_path(relative_path):
     """ Get the absolute path to the resource, works for dev and for PyInstaller 

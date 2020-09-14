@@ -84,6 +84,8 @@ class App(GameModeObserver.GameModeObserver):
         if(self.playmode!= None):
             self.playmode.removeObserver(self)
             self.playmode = None
+        self.state.reset()
+        self.state.fileName = Const.resource_path("assets/levels/Level0.tmx")
         self.playmode = PlayMode.PlayMode(self.state)
         self.playmode.addObserver(self)
         pass

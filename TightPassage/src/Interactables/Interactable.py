@@ -32,6 +32,7 @@ class Interactable(pygame.sprite.Sprite):
         self.animate_fps = 7.0  #todo animationdataclass
         self.die_timer = 0.0
         self.image = None   # the image to render in next frame
+        self.enabled = True #enables update evaluation
 
     def set_rects(self, value, attribute="topleft"):
         """
@@ -40,16 +41,19 @@ class Interactable(pygame.sprite.Sprite):
         points will be set equal.
         """
         setattr(self.rect, attribute, value)
-        self.hitrect.midbottom = self.rect.midbottom
+        self.hitrect.center = self.rect.center
 
-    def collide_other(self,other):
+    def collide_other(self,myrect):
         """ The other argument is a pygame.Rect that you would like to use for
         sprite collision. Return value is a collided callable for use with the
         pygame.sprite.spritecollide function.
         """
         def collide(one, two):
-            return other.colliderect(two.rect)
+            return myrect.colliderect(two.rect)
         return collide
+
+    def update(self):
+        pass
 
     def addObserver(self, observer):
         self.__observers.append(observer)

@@ -1,20 +1,30 @@
-import src.Interactables.Unit as Unit
+import pygame
 from pygame.math import Vector2
 
 class GameState():
-    """Holds all the data of the game"""
-    def __init__(self):
-        self.epoch = 0
-        self.worldSize = Vector2(16,10)
-        self.ground = [ [ Vector2(5,1) ] * 16 ] * 10
-        self.walls = [ [ None ] * 16 ] * 10
-        #self.units = [ Unit.Unit(self,Vector2(8,9),Vector2(1,0)) ]
-        self.bullets = [ ]
-        self.bulletSpeed = 0.1
-        self.bulletRange = 4
-        self.bulletDelay = 5
+    """Holds all the data of the game
+        a Singleton to store Leveldata"""
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(GameState, cls).__new__(cls)
+            # Put any initialization here.
+            cls._instance.reset()
+        return cls._instance
+
+
+    def reset(self):
+        self.worldSize = Vector2(16,16)
         self.observers = [ ]
         self.inGame = False
+        self.units = []
+        self.shoots = pygame.sprite.Group()
+        self.obstacles = []
+        self.doors = []
+        self.player = None
+        self.fileName = ""
+        self.playerSpawn = None
 
     @property
     def worldWidth(self):
@@ -47,14 +57,14 @@ class GameState():
                 return unit
         return None
     
-    def findLiveUnit(self,position):
-        """
-        Returns the index of the first live unit at position, otherwise None.
-        """
-        unit = self.findUnit(position)
-        if unit is None or unit.status != "alive":
-            return None
-        return unit
+    #def findLiveUnit(self,position):
+    #    """
+    #    Returns the index of the first live unit at position, otherwise None.
+    #    """
+    #    unit = self.findUnit(position)
+    #    if unit is None or unit.status != STAT_ALIVE:
+    #        return None
+    #    return unit
     
     def addObserver(self,observer):
         """
@@ -70,3 +80,7 @@ class GameState():
     def notifyBulletFired(self,unit):
         for observer in self.observers:
             observer.bulletFired(unit)
+
+    def notifyWarpTriggered(self,warp):
+        for observer in self.observers:
+            observer.warpTriggered(warp)

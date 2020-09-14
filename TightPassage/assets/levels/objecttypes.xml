@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objecttypes>
+ <objecttype name="Enemy" color="#a40947">
+  <property name="class" type="string"/>
+ </objecttype>
+ <objecttype name="Player" color="#aaffff"/>
+ <objecttype name="Wall" color="#aaff00"/>
+ <objecttype name="Warp" color="#ffaaff">
+  <property name="map" type="string"/>
+  <property name="target" type="string"/>
+ </objecttype>
+</objecttypes>

@@ -6,6 +6,7 @@ import src.Interactables.Interactable
 from src.Interactables.Interactable import Interactable
 import src.Components.ComponentGraphics
 from src.Components.ComponentGraphics import UnitGraphics
+from src.GameState import GameState
 
 class Unit(Interactable):
 
@@ -26,7 +27,7 @@ class Unit(Interactable):
         self.image = pygame.Surface((rect.width,rect.height),pygame.SRCALPHA)
         hit_size = int(0.6*self.rect.width), int(0.4*self.rect.height)
         self.hitrect = pygame.Rect((0,0), hit_size)
-        self.hitrect.midbottom = self.rect.midbottom
+        self.hitrect.center = self.rect.center
         self.speed = speed
         self.health = 3
         #loading resources
@@ -47,72 +48,17 @@ class Unit(Interactable):
             type(self).DEATHSOUND.set_volume(1.0)
         self.direction_stack = []  #Held keys in the order they were pressed.
         self.direction_offset = pygame.Vector2(0,0)
-        self.cd_Atk = 0 #cooldown attack
+        self.coolDown_Attack = 0 #cooldown attack
         self.timer_Atk = 0
         self.attacking = False
         self.cGraphic = UnitGraphics(self)
-        if(False):
-            self.attackframes = []
-            self.attackframe_dict = []
-            self.walkframes = []
-            self.dieframes = []
-            self.idleframes = []
-            self.make_frame_dict()
-            self.adjust_images()
+        self.levelData = GameState() #reference to singleton
+        self.canUseDoors =False
 
     def draw(self, surface):
         """draws the image"""
+        self.cGraphic.update()
         self.cGraphic.draw(self.image)   #self.cGraphic.draw(surface)
-
-    def make_frame_dict(self):
-        """
-        Create a dictionary of direction keys to frames. We can use
-        transform functions to reduce the size of the sprite sheet we need.
-        """
-        indices = [[0,0], [1,0], [2,0], [3,0]]
-        frames = Support.get_images(type(self).SPRITEIMAGE, indices, self.rect.size)
-        self.walkframe_dict = {pygame.K_LEFT : [frames[0], frames[1]],
-                  pygame.K_RIGHT: [pygame.transform.flip(frames[0], True, False),
-                               pygame.transform.flip(frames[1], True, False)],
-                  pygame.K_DOWN : [frames[3],
-                               pygame.transform.flip(frames[3], True, False)],
-                  pygame.K_UP   : [frames[2],
-                               pygame.transform.flip(frames[2], True, False)] }
-        self.dieframe_dict = self.walkframe_dict
-        self.idleframe_dict = self.walkframe_dict
-        self.attackframe_dict = self.walkframe_dict
-
-    def adjust_images(self):
-        """Update the sprite's walkframes as the sprite's direction changes."""
-        if self.direction != self.old_direction:
-            self.walkframes = self.walkframe_dict[self.direction]
-            self.dieframes = self.dieframe_dict[self.direction]
-            self.idleframes = self.idleframe_dict[self.direction]
-            self.attackframes = self.attackframe_dict[self.direction]
-            self.old_direction = self.direction
-            self.redraw = True
-        self.make_image()
-
-    def make_image(self):
-        """Update the sprite's animation as needed."""
-        now = pygame.time.get_ticks()
-        if self.redraw or now-self.animate_timer > 1000/self.animate_fps:
-            if(self.status==Interactable.STAT_DIEING):
-                self.frame = (self.frame+1)%len(self.dieframes)
-                self.image = self.dieframes[self.frame]
-            elif self.direction_stack:
-                self.frame = (self.frame+1)%len(self.walkframes)
-                self.image = self.walkframes[self.frame]
-            elif (self.attacking==True and len(self.attackframes)>0):
-                self.frame = (self.frame+1)%len(self.attackframes)
-                self.image = self.walkframes[self.frame]    #todo attack should not loop
-            elif len(self.idleframes)>0: #fallback to idle
-                self.frame = (self.frame+1)%len(self.idleframes)
-                self.image = self.idleframes[self.frame]
-            self.animate_timer = now
-        if not self.image:
-            self.image = self.walkframes[self.frame]
-        self.redraw = False
 
     def add_direction(self, key):
         """Add a pressed direction key on the direction stack."""
@@ -130,27 +76,36 @@ class Unit(Interactable):
             if self.direction_stack:
                 self.direction = self.direction_stack[-1]
 
-    def update(self, obstacles):
+    def update(self):
         """Adjust the image and move as needed."""
         now = pygame.time.get_ticks()
+        
         if(self.status == Interactable.STAT_DIEING):
             self.frame+=1
-            if ( self.frame>= self.die_timer): self.OnDeath()
+            if ( self.frame>= self.die_timer): 
+                self.OnDeath()
+            return
         elif(self.health<=0):
             if(self.status == Interactable.STAT_ALIVE): self.start_dieing()
             return
         else:
-            if(self.cd_Atk>0): 
-                self.cd_Atk-=1
+            if(self.coolDown_Attack>0): 
+                self.coolDown_Attack-=1
             if(self.timer_Atk>0): 
                 self.timer_Atk-=1
             else:
                 self.attacking = False
             
             if self.direction_stack or self.direction_offset != pygame.Vector2(0,0):
-                self.movement(obstacles, 0)
-                self.movement(obstacles, 1)
-        self.cGraphic.update()
+                self.movement( 0)
+                self.movement( 1)
+            #if(self.canUseDoors):
+            #    callback = self.collide_other(self.hitrect)  #Collidable callback created.
+            #    collisions = pygame.sprite.spritecollide(self, self.levelData.doors, False, callback)
+            #    while collisions:
+            #        collision = collisions.pop()
+            #        self.levelData.notifyWarpTriggered(collision)
+
 
     def start_dieing(self):
         """ triggers the die-sequence
@@ -160,7 +115,7 @@ class Unit(Interactable):
             self.status = Interactable.STAT_DIEING
             self.frame = 0
             self.redraw = True
-            self.die_timer = 10#len(self.dieframes)
+            self.die_timer = 10#todolen(self.dieframes)
             pygame.mixer.Channel(Interactable.SfxCh_Hit).play(type(self).DEATHSOUND)
             return True
         return False
@@ -170,8 +125,8 @@ class Unit(Interactable):
 
     def attack(self):
         """attack in view direction"""
-        if(self.cd_Atk<=0):
-            self.cd_Atk = Const.FPS
+        if(self.coolDown_Attack<=0):
+            self.coolDown_Attack = Const.FPS
             self.timer_Atk = Const.FPS // 2 #todo depends on attack
             self.attacking = True
             #return Fireball.Fireball(self, 10, self.direction)
@@ -186,10 +141,11 @@ class Unit(Interactable):
         self.direction_offset = self.direction_offset.elementwise()*4*amount  #push in oposite direction on hit
         
 
-    def movement(self, obstacles, i):
+    def movement(self,  i):
         """Move player and then check for collisions; adjust as necessary.
         i =0 is x; i=1 is y 
         """
+        obstacles = self.levelData.obstacles
         if self.direction_stack:
             if(not pygame.mixer.Channel(Interactable.SfxCh_Move).get_busy()):
                 pygame.mixer.Channel(Interactable.SfxCh_Move).play(type(self).MOVESOUND)
@@ -203,7 +159,7 @@ class Unit(Interactable):
         while collisions:
             collision = collisions.pop()
             self.adjust_on_collision(self.hitrect, collision, i)
-        self.rect.midbottom = self.hitrect.midbottom
+        self.rect.center = self.hitrect.center
 
     def adjust_on_collision(self, rect_to_adjust, collide, i):
         """Adjust player's position if colliding with a solid block."""
