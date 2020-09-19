@@ -29,13 +29,16 @@
     <Compile Include="scrap\module1.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\AI.py">
+    <Compile Include="src\AI\AI.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\Components\Camera.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\Components\ComponentGraphics.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\Components\MazeGenerator.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\Components\Pool.py">
@@ -153,6 +156,7 @@
     <Folder Include="src\Interactables\" />
     <Folder Include="src\GameModes\" />
     <Folder Include="src\Components\" />
+    <Folder Include="src\AI\" />
     <Folder Include="src\TopDown\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />

@@ -30,6 +30,17 @@ class Unit(Interactable):
         self.hitrect.center = self.rect.center
         self.speed = speed
         self.health = 3
+        #todo:
+        # vector types
+        #self.velocity = velocity
+        #self.heading = heading.normalized
+        #self.side = self.heading.perp
+        # scalar types
+        #self.mass = mass
+        #self.max_speed = max_speed
+        #self.max_force = max_force
+        #self.max_turn_rate = max_turn_rate
+
         #loading resources
         if(type(self).SPRITEIMAGE == None):
             type(self).SPRITEIMAGE = pygame.image.load(Const.resource_path("assets/sprites/skelly.png")).convert()
@@ -167,3 +178,37 @@ class Unit(Interactable):
             rect_to_adjust[i] = collide.rect[i]-rect_to_adjust.size[i]
         else:
             rect_to_adjust[i] = collide.rect[i]+collide.rect.size[i]
+
+    def rotate_heading_to_face_position(self, target):
+        to_target = (target - self.position).normalized
+        dot = self.heading.dot(to_target)
+
+        # correct inaccuracy by clamping into range [-1, 1] to be valid for acos
+        dot = dot if dot < 1 else 1
+        dot = dot if dot > -1 else -1
+
+        angle = math_acos(dot)
+
+        # clamp the amount to turn to the max turn rate
+        if angle > self.max_turn_rate:
+            angle = self.max_turn_rate
+
+        # rotate the heading and velocity
+        self.heading.rotate(angle / PI_DIV_180)
+        self.velocity.rotate(angle / PI_DIV_180)
+
+        # update/recreate the side also
+        self.side = self.heading.perp
+
+    def set_heading(self, new_heading):
+        self.heading = new_heading
+        self.side = self.heading.perp
+
+    def enforce_non_penetration(self, entities):
+        for entity in entities:
+            if entity is not self:
+                to_entity = self.position - entity.position
+                dist_from_each_other = to_entity.length
+                amount_of_overlap = entity.bounding_radius + self.bounding_radius - dist_from_each_other
+                if amount_of_overlap > 0:
+                    entity.position -= (to_entity / dist_from_each_other) * amount_of_overlap

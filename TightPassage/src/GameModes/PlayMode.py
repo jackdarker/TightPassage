@@ -1,6 +1,7 @@
 import pygame
 import pyscroll
 import src.Const as Const
+import src.Support as Support
 import src.GameMode as GameMode
 import src.Interactables.Block as Block
 import src.Interactables.Unit as Unit
@@ -9,6 +10,7 @@ import src.Interactables.Imp as Imp
 from src.GameState import GameState
 import pytmx
 from src.Components.TiledImporter import TiledImporter
+import src.Components.MazeGenerator as MazeGenerator
 
 class PlayMode(GameMode.GameMode):
     """ implements the behaviour of the game (walking around, hitting walls & enemy)
@@ -16,7 +18,8 @@ class PlayMode(GameMode.GameMode):
     def __init__(self,state):
         super().__init__(state)
         state.addObserver(self)
-        self.loadLevel()
+        self.group=None
+        self.startNewGame()
         self.state.inGame = True
 
     def processInput(self):
@@ -38,10 +41,54 @@ class PlayMode(GameMode.GameMode):
                 self.state.player.pop_direction(event.key)
             #elif event.type == pygame.MOUSEMOTION:
             #    print(event.pos)
+        pass
 
-    def loadLevel(self, playerSpawnPoint=None):
+    def startNewGame(self):
+        #self.state.fileName = Const.resource_path("assets/levels/Level0.tmx")
+        #todo put this into a loader ?
+        gbuilder = MazeGenerator.GridBuilderRect()
+        gbuilder.setParams(5, 4)
+        if(self.state.mazeGenerator!=None and 
+           type(self.state.mazeGenerator)==type('')):   #text should be a classname (subclass of mazegenerator) 
+            mzbuilder =getattr(MazeGenerator,self.state.mazeGenerator)() #getattr on a module returns a class or function
+        else: mzbuilder = MazeGenerator.MazeGenerator()
+        mzbuilder.setParams(10, gbuilder)
+        mzbuilder.createMap()
+        lvlbuilder = MazeGenerator.RoomDesigner()
+        lvlbuilder.setMapNodes(mzbuilder.nodes)
+        lvlbuilder.parseLevelTemplates([Const.resource_path("assets/levels/Level0.tmx"),
+                                        Const.resource_path("assets/levels/Level1.tmx"),
+                                        Const.resource_path("assets/levels/Level2.tmx"),
+                                        Const.resource_path("assets/levels/Level3.tmx"),
+                                        Const.resource_path("assets/levels/Level4.tmx"),
+                                        Const.resource_path("assets/levels/Level5.tmx"),
+                                        Const.resource_path("assets/levels/Level6.tmx"),
+                                        Const.resource_path("assets/levels/Level7.tmx"),
+                                        Const.resource_path("assets/levels/Level8.tmx"),
+                                        Const.resource_path("assets/levels/Level9.tmx"),
+                                        Const.resource_path("assets/levels/Level10.tmx"),
+                                        Const.resource_path("assets/levels/Level11.tmx"),
+                                        Const.resource_path("assets/levels/Level12.tmx"),
+                                        Const.resource_path("assets/levels/Level13.tmx"),
+                                        Const.resource_path("assets/levels/Level14.tmx")])
+        lvlbuilder.createWorld()
+        self.state.mazeNodes = lvlbuilder.nodes
+        self.loadLevel(MazeGenerator.MapNode.getPlayerSpawnNode(self.state.mazeNodes))
+
+    def loadLevel(self,targetNode, playerSpawnPoint=None):
+        #cleanup actual level
+        for door in self.state.doors:
+            door.removeObserver(self)
+        if(self.group!=None):
+            self.group.remove(self.state.obstacles)
+            self.group.remove(self.state.doors)
+            self.group.remove(self.state.units)
+            self.group.remove(self.state.player)
+            self.group.remove(self.state.shoots)
+
+        self.state.currentMazeNode = targetNode
         importer = TiledImporter(self.state)
-        self.tiled_map = importer.loadMap(self.state.fileName)
+        self.tiled_map = importer.loadMap(targetNode.fileName)
         # create new data source for pyscroll and create new renderer (camera)
         self.map_layer = pyscroll.BufferedRenderer(pyscroll.data.TiledMapData(self.tiled_map), 
                                                    Const.WINDOW_SIZE, clamp_camera=False, tall_sprites=1)
@@ -75,8 +122,9 @@ class PlayMode(GameMode.GameMode):
                 elif(playerSpawnPoint=="east"):playerSpawnPoint ="west"
                 elif(playerSpawnPoint=="west"):playerSpawnPoint ="east"
                 for door in self.state.doors:
-                    if(door.target == playerSpawnPoint): self.state.player.set_rects(door.rect.center, "center") #.move(-64,0)
-                    pass
+                    if(door.target == playerSpawnPoint): 
+                        self.state.player.set_rects(door.rect.center, "center") #.move(-64,0)
+        pass
 
     def update(self):
         self.group.update()
@@ -97,7 +145,7 @@ class PlayMode(GameMode.GameMode):
         return
 
 
-    def OBSOLETE_renderLayer(self,surface,layer,offset=(0,0)):
+    def OBSOLETE_renderLayer(self,surface,layer,offset=(0,0)): #not used , using pyscroll
         """renders the layer to screen-surface
         offset is x,y offset in tiles 
         """
@@ -141,10 +189,10 @@ class PlayMode(GameMode.GameMode):
 
     def warpTriggered(self,warp):
         """called on door/teleporter trigger"""
-        if(warp.map != None):
-            self.state.fileName = Const.resource_path("assets/levels/"+warp.map)
-            self.playerSpawn = warp.target
-            self.loadLevel(self.playerSpawn)
+        if(warp.target != None):
+            #self.state.fileName = Const.resource_path("assets/levels/"+warp.map)
+            map=self.state.currentMazeNode.doorResolver(self.state.mazeNodes,self.state.currentMazeNode,warp.target)
+            self.loadLevel(map,warp.target,)
         else:
             pass #todo
 

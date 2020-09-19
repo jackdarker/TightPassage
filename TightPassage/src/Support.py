@@ -34,3 +34,34 @@ def get_allImagesInDirectory(sheet,size):
             frame_rect = ((size[0]*x,size[1]*y), size)
             frames.append(sheet.subsurface(frame_rect))
     return frames
+
+
+def get_class(fully_qualified_path, module_name, class_name, *instantiation):
+    """
+    Returns an instantiated class for the given string descriptors
+    :param fully_qualified_path: The path to the module eg("Utilities.Printer")
+    :param module_name: The module name eg("Printer")
+    :param class_name: The class name eg("ScreenPrinter")
+    :param instantiation: Any fields required to instantiate the class
+    :return: An instance of the class
+    """
+
+    #todo: thats not working ! Maybe use this:
+    #import importlib
+    #def str_to_class(module_name, class_name):
+    #    """Return a class instance from a string reference"""
+    #    try:
+    #        module_ = importlib.import_module(module_name)
+    #        try:
+    #            class_ = getattr(module_, class_name)()
+    #        except AttributeError:
+    #            logging.error('Class does not exist')
+    #    except ImportError:
+    #        logging.error('Module does not exist')
+    #    return class_ or None
+
+    p = __import__(fully_qualified_path)
+    m = getattr(p, module_name)
+    c = getattr(m, class_name)
+    instance = c(*instantiation)
+    return instance

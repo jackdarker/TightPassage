@@ -79,13 +79,13 @@ class App(GameModeObserver.GameModeObserver):
         """notification"""
         self._running = False
     
-    def loadLevelRequested(self,filename):
+    def newGameRequested(self,MazeGenerator):
         """notification from menumode"""
         if(self.playmode!= None):
             self.playmode.removeObserver(self)
             self.playmode = None
         self.state.reset()
-        self.state.fileName = Const.resource_path("assets/levels/Level0.tmx")
+        self.state.mazeGenerator= MazeGenerator
         self.playmode = PlayMode.PlayMode(self.state)
         self.playmode.addObserver(self)
         pass

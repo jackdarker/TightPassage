@@ -15,10 +15,12 @@ class MenuMode(GameMode.GameMode):
         my_theme = pygame_menu.themes.THEME_BLUE.copy()
         my_theme.widget_font=font
         #mainmenu
-        menu = pygame_menu.Menu(300, 400, 'Welcome',theme=my_theme)
+        menu = pygame_menu.Menu(500, 400, 'Welcome',theme=my_theme)
         menu.add_text_input('Name :', default='John Doe')
         menu.add_selector('Difficulty :', [('Hard', 1), ('Easy', 2)], onchange=self.set_difficulty)
         menu.add_button('Play', self.new_game)
+        if(Const.DEBUG==True):
+            menu.add_button('Play Testmaze', self.test_game)
         menu.add_button('Quit', self.notifyQuitRequested)
         self.main_menu = menu
         #pausemenu
@@ -52,7 +54,12 @@ class MenuMode(GameMode.GameMode):
     def new_game(self):
         self.menu.disable()
         self.menu.reset(1)
-        self.notifyLoadLevelRequested("Level0")
+        self.notifyNewGameRequested()
+
+    def test_game(self):
+        self.menu.disable()
+        self.menu.reset(1)
+        self.notifyNewGameRequested(MazeGenerator="TestMazeGenerator")
 
     def show_MainMenu(self):
         if(self.state.inGame):

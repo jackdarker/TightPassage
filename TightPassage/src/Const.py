@@ -4,13 +4,14 @@ import pygame
 #some global constants
 
 FPS = 60.0
-WINDOW_SIZE = (640, 480)
+WINDOW_SIZE = (640, 640)
 BACKGROUND_COLOR = (40, 40, 40)
-#transparency color of sprites
-COLOR_KEY = (255, 0, 255)
+
+COLOR_KEY = (255, 0, 255) #transparency color of sprites without alpha
 CAPTION = "dungeon"
 
 #debug-tools
+DEBUG = True    #enables some stuff that should only be available in dev-mode
 DRAW_COLLIDERS = False  # hitrects and colliders are drawn on screen
 
 def resource_path(relative_path):

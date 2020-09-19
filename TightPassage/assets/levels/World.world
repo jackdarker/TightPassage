@@ -41,6 +41,69 @@
             "width": 512,
             "x": 122,
             "y": -512
+        },
+        {
+            "fileName": "Level8.tmx",
+            "height": 512,
+            "width": 512,
+            "x": 121,
+            "y": 512
+        },
+        {
+            "fileName": "Level7.tmx",
+            "height": 512,
+            "width": 512,
+            "x": 1144,
+            "y": 512
+        },
+        {
+            "fileName": "Level6.tmx",
+            "height": 512,
+            "width": 512,
+            "x": 631,
+            "y": 512
+        },
+        {
+            "fileName": "Level9.tmx",
+            "height": 512,
+            "width": 512,
+            "x": 630,
+            "y": 1504
+        },
+        {
+            "fileName": "Level10.tmx",
+            "height": 512,
+            "width": 512,
+            "x": 1717,
+            "y": 1504
+        },
+        {
+            "fileName": "Level14.tmx",
+            "height": 512,
+            "width": 512,
+            "x": 1716,
+            "y": 2016
+        },
+        {
+            "fileName": "Level13.tmx",
+            "height": 512,
+            "width": 512,
+            "x": 1715,
+            "y": 992
+        },
+        {
+            "fileName": "Level12.tmx",
+            "height": 512,
+            "width": 512,
+            "x": 1138,
+            "y": 1504
+        },
+        {
+            "fileName": "Level11.tmx",
+            "height": 512,
+            "width": 512,
+            "x": 113,
+            "y": 1504
         }
     ],
     "onlyShowAdjacentMaps": false,

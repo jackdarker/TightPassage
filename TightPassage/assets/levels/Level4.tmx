@@ -80,7 +80,7 @@
    </properties>
    <point/>
   </object>
-  <object id="16" type="Warp" x="221.667" y="467.666" width="64" height="21">
+  <object id="16" type="Warp" x="224.667" y="466.666" width="64" height="21">
    <properties>
     <property name="map" value="Level1.tmx"/>
     <property name="target" value="south"/>
@@ -93,7 +93,7 @@
   <object id="31" type="Player" x="143" y="369">
    <point/>
   </object>
-  <object id="33" type="Wall" x="190.167" y="493.5" width="131.667" height="12.3333"/>
-  <object id="34" type="Wall" x="-1.1669" y="212.833" width="14.3337" height="90.3333"/>
+  <object id="33" type="Wall" x="196.167" y="501.5" width="131.667" height="12.3333"/>
+  <object id="34" type="Wall" x="-5.1669" y="210.833" width="14.3337" height="90.3333"/>
  </objectgroup>
 </map>

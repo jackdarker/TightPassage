@@ -15,9 +15,10 @@ class GameState():
 
 
     def reset(self):
-        self.worldSize = Vector2(16,16)
+        self.worldSize = Vector2(16,16) #todo is screensize in tiles
         self.observers = [ ]
         self.inGame = False
+        #actual room vars
         self.units = []
         self.shoots = pygame.sprite.Group()
         self.obstacles = []
@@ -25,6 +26,10 @@ class GameState():
         self.player = None
         self.fileName = ""
         self.playerSpawn = None
+        #maze vars
+        self.mazeGenerator = None
+        self.mazeNodes = []
+        self.currentMazeNode = None
 
     @property
     def worldWidth(self):

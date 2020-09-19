@@ -10,6 +10,7 @@ from src.GameState import GameState
 
 class Warp(Interactable):
     """ a trigger to move the player to a different loaction f.e. a door or teleporter
+    make sure that their is enough space or the sprite might gat stuck in an obstacle or is pushed away
     """
     def __init__(self,rect):
         self.map = None
@@ -21,9 +22,15 @@ class Warp(Interactable):
         self.triggered=False
         self.firstPassDone = False
 
-    def setTarget(self,map,target):
+    def setTarget(self,map,target,world):
+        """
+        map = filename of the roomlayout
+        target = spawnposition (Rect or textlabel of an object)
+        world = "" if this is a teleport to a room inside this world or a name of a world
+        """
         self.map = map
         self.target = target
+        self.world = world
 
     def update(self):
         state=GameState()

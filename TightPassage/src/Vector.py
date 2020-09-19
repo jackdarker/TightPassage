@@ -1,13 +1,48 @@
+from math import hypot
+#from math import radians
+#from math import degrees
+from math import sin
+from math import cos
+from math import acos
+from math import pi
+from math import atan2
+
+EPSILON = 1e-9
+PI_DIV_180 = pi / 180.0
+
+def sign(value):
+    """
+    Signum function. Computes the sign of a value.
+
+    :Parameters:
+        value : numerical
+            Any number.
+
+    :rtype: numerical
+
+    :Returns:
+        -1 if value was negative,
+        1 if value was positive,
+        0 if value was equal zero
+    """
+    assert isinstance(value, int) or isinstance(value, float)
+    if 0 < value:
+        return 1
+    elif 0 > value:
+        return -1
+    else:
+        return 0
+
 class Vector2(object):
-    def __init__(self, X=0.0, Y=0.0):
-        self.X = X
-        self.Y = Y
+    def __init__(self, x=0.0, y=0.0):
+        self.x = x
+        self.y = y
 
     def __add__(self, other):
         if isinstance(other, Vector2):
             new_vec = Vector2()
-            new_vec.X = self.X + other.X
-            new_vec.Y = self.Y + other.Y
+            new_vec.x = self.x + other.x
+            new_vec.y = self.y + other.y
             return new_vec
         else:
             raise TypeError("other must be of type Vector2")
@@ -18,8 +53,8 @@ class Vector2(object):
     def __sub__(self, other):
         if isinstance(other, Vector2):
             new_vec = Vector2()
-            new_vec.X = self.X - other.X
-            new_vec.Y = self.Y - other.Y
+            new_vec.x = self.x - other.x
+            new_vec.y = self.y - other.y
             return new_vec
         else:
             raise TypeError("other must be of type Vector2")
@@ -30,8 +65,8 @@ class Vector2(object):
     def __mul__(self, value):
         if isinstance(value, numbers.Number):
             new_vec = self.copy()
-            new_vec.X = new_vec.X * value
-            new_vec.Y = new_vec.Y * value
+            new_vec.x = new_vec.x * value
+            new_vec.y = new_vec.y * value
             return new_vec
         else:
             raise TypeError("value must be a number.")
@@ -43,8 +78,8 @@ class Vector2(object):
         if isinstance(value, numbers.Number):
             if value:
                 new_vec = self.copy()
-                new_vec.X /= value
-                new_vec.Y /= value
+                new_vec.x /= value
+                new_vec.y /= value
                 return new_vec
             else:
                 raise ZeroDivisionError("Cannot divide by zero.")
@@ -55,8 +90,8 @@ class Vector2(object):
         if isinstance(value, numbers.Number):
             if value:
                 new_vec = self.copy()
-                new_vec.X = new_vec.X // value
-                new_vec.Y = new_vec.Y // value
+                new_vec.x = new_vec.x // value
+                new_vec.y = new_vec.y // value
                 return new_vec
             else:
                 raise ZeroDivisionError("Cannot divide by zero.")
@@ -72,7 +107,7 @@ class Vector2(object):
     def __eq__(self, other):
         """Check to see if two Vector2 objects are equal"""
         if isinstance(other, Vector2):
-            if self.X == other.X and self.Y == other.Y:
+            if self.x == other.x and self.y == other.y:
                 return True
         else:
             raise TypeError("other must be of type Vector2")
@@ -80,31 +115,38 @@ class Vector2(object):
         return False
 
     def __neg__(self):
-        return Vector2(-self.X, -self.Y)
+        return Vector2(-self.x, -self.y)
 
     def __getitem__(self, index):
         if index > 1:
             raise IndexError("Index must be less than 2")
 
         if index == 0:
-            return self.X
+            return self.x
         else:
-            return self.Y
+            return self.y
 
     def __setitem__(self, index, value):
         if index > 1:
             raise IndexError("Index must be less than 2")
 
         if index == 0:
-            self.X = value
+            self.x = value
         else:
-            self.Y = value
+            self.y = value
 
     def __str__(self):
-        return "<Vector2> [ " + str(self.X) + ", " + str(self.Y) + " ]"
+        return "<Vector2> [ " + str(self.x) + ", " + str(self.y) + " ]"
 
     def __len__(self):
         return 2
+
+    def zero(self):
+        self.x = 0.0
+        self.y = 0.0
+
+    def is_zero(self):
+        return self.x * self.x + self.y * self.y < EPSILON
 
     # Define our properties
     @staticmethod
@@ -120,20 +162,53 @@ class Vector2(object):
     def copy(self):
         """Create a copy of this Vector"""
         new_vec = Vector2()
-        new_vec.X = self.X
-        new_vec.Y = self.Y
+        new_vec.x = self.x
+        new_vec.y = self.y
         return new_vec
 
-    def length(self):
-        """Gets the length of this Vector"""
-        return math.sqrt((self.X * self.X) + (self.Y * self.Y))
+    def _length(self):
+        """
+        Calculates the length of the vector and returns it.
+        """
+        return hypot(self.x, self.y)
 
+    def _set_length(self, value):
+        """Scale the vector to have a given length"""
+        self *= (value / self.length)
+
+    length = property(_length, _set_length, doc="""
+    returns length and change the length if set::
+
+        v = Vec2(x, y)
+        length = v.length
+        v.length = 10 # vectors is scaled so length is 10 now
+
+    """)
+
+    def _length_sq(self):
+        """
+        Calculates the squared length of the vector and returns it.
+        """
+        return self.x * self.x + self.y * self.y
+    length_sq = property(_length_sq, doc="""returns length squared""")
+
+    def _normalized(self):
+        """
+        Returns a new vector with unit length.
+        """
+        leng = self.length
+        if leng:
+            return self.__class__(self.x / leng, self.y / leng)
+        else:
+            return self.__class__(0, 0)
+    normalized = property(_normalized,
+                                doc="""returns new vector with unit length""")
     def normalize(self):
-        """Gets the normalized Vector"""
+        """modifys to normalized Vector"""
         length = self.length()
         if length > 0:
-            self.X /= length
-            self.Y /= length
+            self.x /= length
+            self.y /= length
         else:
             print("Length 0, cannot normalize.")
 
@@ -142,6 +217,135 @@ class Vector2(object):
         vec = self.copy()
         vec.normalize()
         return vec
+
+    def _normal_left(self):
+        """returns the right normal (perpendicular), not unit length"""
+        return self.__class__(-self.y, self.x)
+    normal_left = property(_normal_left)
+
+    def _normal_right(self):
+        """returns the left normal (perpendicular), not unit length"""
+        return self.__class__(self.y, -self.x)
+    normal_right = property(_normal_right)
+
+    perp = normal_left
+    def truncate(self, scalar):
+        if self.length_sq > scalar * scalar:
+            self.length = scalar
+
+    def wrap_around(self, size):
+        x_max, y_max = size
+        if self.x > x_max:
+            self.x = 0
+        elif self.x < 0.0:
+            self.x = x_max
+        if self.y > y_max:
+            self.y = 0
+        elif self.y < 0.0:
+            self.y = y_max
+
+    def round(self, n_digits=3):
+        """
+        Round values to n_digits.
+
+        :Parameters:
+            n_digits : int
+                Number of digits after the point.
+        """
+        self.x = round(self.x, n_digits)
+        self.y = round(self.y, n_digits)
+
+    def rounded(self, n_digits=3):
+        """
+        Get a rounded vector.
+
+        :Parameters:
+            n_digits : int
+                Number of digits after the point.
+
+        :rtype: `Vec2`
+        :Returns: `Vec2` rounded to n_digits
+        """
+        return self.__class__(round(self.x, n_digits), round(self.y, n_digits))
+    def cross(self, other):
+        """
+        Cross product.
+
+        :Parameters:
+            other : `Vec2`
+                The second vector for the cross product.
+
+        :rtype: float
+        :Returns: z value of the cross product (since x and y would be 0).
+        :Note: a.cross(b) == - b.cross(a)
+        """
+        assert isinstance(other, self.__class__)
+        return self.x * other.y - self.y * other.x
+
+    def project_onto(self, other):
+        """
+        Project this vector onto another one.
+
+        :Parameters:
+            other : `Vec2`
+                The other vector to project onto.
+
+        :rtype: `Vec2`
+        :Returns: The projected vector.
+        """
+        assert isinstance(other, self.__class__)
+        return self.dot(other) / other.length_sq * other
+
+    def reflect(self, normal):
+        """normal should be normalized unitlength"""
+        assert isinstance(normal, self.__class__)
+        return self - 2 * self.dot(normal) * normal
+
+    def reflect_tangent(self, tangent):
+        """tangent should be normalized, unitlength"""
+        assert isinstance(tangent, self.__class__)
+        return 2 * tangent.dot(self) * tangent - self
+
+    def rotate(self, degrees):
+        """Rotates the vector bout the angle (degrees), + clockwise, - ccw"""
+        rad = degrees * PI_DIV_180
+        sin_val = sin(rad)
+        cos_val = cos(rad)
+        xcoord = self.x
+        self.x = cos_val * xcoord - sin_val * self.y
+        self.y = sin_val * xcoord + cos_val * self.y
+
+    def rotated(self, degrees):
+        """
+        Returns a new vector, rotated about angle (degrees), + clockwise, - ccw
+        """
+        rad = degrees * PI_DIV_180
+        sin_val = sin(rad)
+        cos_val = cos(rad)
+        return self.__class__(cos_val * self.x - sin_val * self.y,
+                              sin_val * self.x + cos_val * self.y)
+
+    def scaled(self, scale):
+        """
+        Returns a vector scaled to given length.
+
+        :Returns: `Vec2` with lange scale
+        """
+        scale = scale / self.length
+        return self.__class__(scale * self.x, scale * self.y)
+
+    def rotate_to(self, angle_degrees):
+        """rotates the vector to the given angle (degrees)."""
+        self.rotate(angle_degrees - self.angle)
+
+    def get_angle_between(self, other):
+        """Returns the angle between the vectors."""
+        assert isinstance(other, self.__class__)
+        length = self.length
+        olen = other.length
+        if length and olen:
+            return  acos(self.dot(other) / (length * olen)) / PI_DIV_180
+        return 0
 
     @staticmethod
     def distance(vec1, vec2):
@@ -158,7 +362,7 @@ class Vector2(object):
         """Calculate the dot product between two Vectors"""
         if isinstance(vec1, Vector2) \
                 and isinstance(vec2, Vector2):
-            return ((vec1.X * vec2.X) + (vec1.Y * vec2.Y))
+            return ((vec1.x * vec2.x) + (vec1.y * vec2.y))
         else:
             raise TypeError("vec1 and vec2 must be Vector2's")
 
@@ -192,27 +396,27 @@ class Vector2(object):
     def from_polar(degrees, magnitude):
         """Convert polar coordinates to Carteasian Coordinates"""
         vec = Vector2()
-        vec.X = math.cos(math.radians(degrees)) * magnitude
+        vec.x = math.cos(math.radians(degrees)) * magnitude
 
         # Negate because y in screen coordinates points down, oppisite from what is
         # expected in traditional mathematics.
-        vec.Y = -math.sin(math.radians(degrees)) * magnitude
+        vec.y = -math.sin(math.radians(degrees)) * magnitude
         return vec
 
     @staticmethod
     def component_mul(vec1, vec2):
         """Multiply the components of the vectors and return the result."""
         new_vec = Vector2()
-        new_vec.X = vec1.X * vec2.X
-        new_vec.Y = vec1.Y * vec2.Y
+        new_vec.x = vec1.x * vec2.x
+        new_vec.y = vec1.y * vec2.y
         return new_vec
 
     @staticmethod
     def component_div(vec1, vec2):
         """Divide the components of the vectors and return the result."""
         new_vec = Vector2()
-        new_vec.X = vec1.X / vec2.X
-        new_vec.Y = vec1.Y / vec2.Y
+        new_vec.x = vec1.x / vec2.x
+        new_vec.y = vec1.y / vec2.y
         return new_vec
 
 
@@ -973,3 +1177,118 @@ class Matrix4(object):
             raise ValueError("rotAmt must be a Vector3")
         return Matrix4.x_rotate(vec3.x) * Matrix4.y_rotate(vec3.y) * Matrix4.z_rotate(vec3.z)
 
+"""line-intersection code from dr0id-book_programming_game_ai_by_example"""
+def line_intersection_2d(a, b, c, d):
+    r_top = (a.y - c.y) * (d.x - c.x) - (a.x - c.x) * (d.y - c.y)
+    s_top = (a.y - c.y) * (b.x - a.x) - (a.x - c.x) * (b.y - a.y)
+    bot = (b.x - a.x) * (d.y - c.y) - (b.y - a.y) * (d.x - c.x)
+
+    if bot == 0:  # //parallel
+        return False
+
+    inv_bot = 1.0 / bot
+    r = r_top * inv_bot
+    s = s_top * inv_bot
+
+    if (r > 0) and (r < 1) and (s > 0) and (s < 1):
+        # lines intersect
+        return True
+
+    # lines do not intersect
+    return False
+
+
+def line_intersection_point_2d(a, b, c, d):
+    r_top = (a.y - c.y) * (d.x - c.x) - (a.x - c.x) * (d.y - c.y)
+    r_bot = (b.x - a.x) * (d.y - c.y) - (b.y - a.y) * (d.x - c.x)
+    s_top = (a.y - c.y) * (b.x - a.x) - (a.x - c.x) * (b.y - a.y)
+    s_bot = (b.x - a.x) * (d.y - c.y) - (b.y - a.y) * (d.x - c.x)
+
+    if r_bot == 0 or s_bot == 0:  # //parallel
+        return False, None, None
+
+    r = r_top / r_bot
+    s = s_top / s_bot
+
+    if (r > 0) and (r < 1) and (s > 0) and (s < 1):
+        # lines intersect
+
+        _dist = a.get_distance(b) * r
+        _point = a + r * (b - a)
+        return True, _point, _dist
+
+    # lines do not intersect
+    return False, None, None
+
+
+def dist_to_line_segment_sq(a, b, p):
+    """
+    given a line segment AB and a point P, this function calculates the
+    perpendicular distance between them.
+    Avoiding sqrt.
+    """
+    # if the angle is obtuse between pa and ab is obtuse then the closest vertex must be A
+    dot_a = (p.x - a.x) * (b.x - a.x) + (p.y - a.y) * (b.y - a.y)
+
+    if dot_a <= 0:
+        return a.get_distance_sq(p)
+
+    # if the angle is obtuse between pb and ab is obtuse then the closest vertex must be B
+    dot_b = (p.x - b.x) * (a.x - b.x) + (p.y - b.y) * (a.y - b.y)
+
+    if dot_b <= 0:
+        return b.get_distance_sq(p)
+
+    # calculate the point along AB that is the closest to p
+    point = a + ((b - a) * dot_a) / (dot_a + dot_b)
+
+    # calculate the distance p-point
+    return p.get_distance_sq(point)
+
+
+def line_segment_circle_intersection(a, b, p, r):
+    """
+    returns true if the line segemnt AB intersects with a circle at
+    position P with radius radius
+    """
+    # first determine the distance from the center o the circle to
+    # the line segment (working in distance squared space)
+    dist_to_line_sq = dist_to_line_segment_sq(a, b, p)
+
+    if dist_to_line_sq < r * r:
+        return True
+    else:
+        return False
+
+
+def do_lines_intersect_circle(walls, cur_pos, radius):
+    # test against the walls
+    for wall in walls:
+        # do a line segment intersection test
+        # if line_segment_circle_intersection(wall.start, wall.end, cur_pos, radius):
+        #     return True
+        # optimized by inlining method 'line_segment_circle_intersection'
+        dist_to_line_sq = dist_to_line_segment_sq(wall.start, wall.end, cur_pos)
+
+        if dist_to_line_sq < radius * radius:
+            return True
+        # else:
+        #     return False
+
+    return False
+
+
+def find_closest_point_of_intersection_with_walls(a, b, walls):
+    distance = sys.maxsize
+    this_impact_point = None
+    for wall in walls:
+        is_intersecting, impact_point, dist = line_intersection_point_2d(a, b, wall.start, wall.end)
+        if is_intersecting:
+            if dist < distance:
+                distance = dist
+                this_impact_point = impact_point
+
+    if distance < sys.maxsize:
+        return True, this_impact_point, distance
+
+    return False, this_impact_point, distance

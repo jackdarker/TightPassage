@@ -74,13 +74,7 @@
     <property name="target" value="west"/>
    </properties>
   </object>
-  <object id="11" type="Enemy" x="398" y="139">
-   <properties>
-    <property name="class" value="Imp"/>
-   </properties>
-   <point/>
-  </object>
-  <object id="15" type="Warp" x="221.333" y="18" width="65" height="22">
+  <object id="15" type="Warp" x="221.333" y="26" width="65" height="22">
    <properties>
     <property name="map" value="Level4.tmx"/>
     <property name="target" value="north"/>
@@ -88,6 +82,7 @@
   </object>
   <object id="16" type="Warp" x="220.333" y="469" width="64" height="21">
    <properties>
+    <property name="map" value="Level7.tmx"/>
     <property name="target" value="south"/>
    </properties>
   </object>
@@ -99,8 +94,8 @@
   <object id="31" type="Player" x="143" y="369">
    <point/>
   </object>
-  <object id="32" type="Wall" x="193.5" y="1.83319" width="131.667" height="12.3333"/>
-  <object id="33" type="Wall" x="191.167" y="495.834" width="131.667" height="12.3333"/>
+  <object id="32" type="Wall" x="192.5" y="-3.16681" width="131.667" height="12.3333"/>
+  <object id="33" type="Wall" x="191.167" y="506.834" width="131.667" height="12.3333"/>
   <object id="34" type="Wall" x="1.8331" y="211.167" width="14.3337" height="90.3333"/>
  </objectgroup>
 </map>

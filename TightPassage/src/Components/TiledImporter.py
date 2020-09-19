@@ -37,7 +37,7 @@ class TiledImporter():
                 self.state.units.add(obstacle)
             elif(object.type=='Warp'):
                 obstacle = Warp.Warp(pygame.Rect(object.x, object.y,object.width, object.height))
-                obstacle.setTarget(object.properties.get('map'),object.properties.get('target'))
+                obstacle.setTarget(object.properties.get('map'),object.properties.get('target'),object.properties.get('world'))
                 self.state.doors.add(obstacle)
             elif(object.type=='Player'):
                 self.playerSpawn = pygame.Rect(object.x, object.y,64,64)

@@ -10,6 +10,9 @@ class GameMode():
         if(self.__observers.count(observer)):
             self.__observers.remove(observer)
 
+    def notifyNewGameRequested(self,MazeGenerator="MazeGenerator"):
+        for observer in self.__observers:
+            observer.newGameRequested(MazeGenerator)
     def notifyLoadLevelRequested(self, fileName):
         for observer in self.__observers:
             observer.loadLevelRequested(fileName)

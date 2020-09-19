@@ -67,12 +67,6 @@
  </layer>
  <objectgroup id="2" name="Objektebene 1">
   <object id="1" type="Wall" x="32" y="4.333" width="432" height="55"/>
-  <object id="11" type="Enemy" x="398" y="139">
-   <properties>
-    <property name="class" value="Imp"/>
-   </properties>
-   <point/>
-  </object>
   <object id="14" type="Warp" x="470" y="230.333" width="20" height="60">
    <properties>
     <property name="map" value="Level3.tmx"/>
@@ -93,7 +87,7 @@
   <object id="31" type="Player" x="143" y="369">
    <point/>
   </object>
-  <object id="33" type="Wall" x="192.833" y="494.167" width="131.667" height="12.3333"/>
-  <object id="35" type="Wall" x="492.833" y="209.5" width="15.0003" height="94.3333"/>
+  <object id="33" type="Wall" x="193.833" y="501.167" width="131.667" height="12.3333"/>
+  <object id="35" type="Wall" x="497.833" y="211.5" width="15.0003" height="94.3333"/>
  </objectgroup>
 </map>
