@@ -2,6 +2,7 @@ import os
 import pygame
 import src.Const as Const
 import src.Support as Support
+from src.Vector import Vector2
 import src.Interactables.Unit
 from src.Interactables.Unit import Unit
 from src.Interactables.Fireball import Fireball
@@ -15,7 +16,7 @@ class Player(Unit):
     KEY_ATTACK = pygame.K_SPACE
     KEY_USE = pygame.K_e
 
-    def __init__(self, rect, speed, direction=pygame.K_RIGHT):
+    def __init__(self, rect, speed, direction=Vector2(1,0)):
         """
         Arguments are a rect representing the Player's location and
         dimension, the speed(in pixels/frame) of the Player, and the Player's

@@ -2,6 +2,7 @@ import os
 import pygame
 import src.Const as Const
 import src.Support as Support
+from src.Vector import Vector2
 import src.Interactables.Interactable
 from src.Interactables.Interactable import Interactable
 import src.Interactables.Unit as Unit
@@ -9,22 +10,24 @@ from src.Interactables.Unit import Unit
 import src.Components.ComponentGraphics
 from src.Components.ComponentGraphics import UnitGraphics
 from src.Components.ComponentGraphics import AnimData
+from src.AI.BehaviourSteering import BehaviourNone
 
 class DamagerInfo:
     def __init__(self, direction,duration,damage,size,offset):
         self.size = size    # size of the damager hitrect
-        self.direction = direction  #in which direction the damager is executed
+        self.direction = direction  #vector in which direction the damager is executed
         self.duration = duration    #how long the damager is active
         self.damage = damage    #amount of damage
 
         # positionoffset to sprite-center when facing to right
         #the offset&size of the hitrect needs to be adjusted depending on the direction
-        if(direction==pygame.K_LEFT):
+        facing=Interactable.Direct_Dict_Inverse(direction)
+        if(facing==Interactable.Facing_Left):
             self.offset = (offset[0]*-1, offset[1])
-        elif(direction==pygame.K_UP):
+        elif(facing==Interactable.Facing_Up):
             self.offset = (offset[1], offset[0]*-1)
             self.size = (size[1],size[0])
-        elif(direction==pygame.K_DOWN):
+        elif(facing==Interactable.Facing_Down):
             self.offset = (offset[1], offset[0])
             self.size = (size[1],size[0])
         else: self.offset = offset   
@@ -43,7 +46,10 @@ class Damager(Unit):
         self.hitrect.center = self.rect.center
         self.parent = creator
         self.duration = self.damagerInfo.duration
-        self.direction_offset = Interactable.DIRECT_DICT[self.damagerInfo.direction]
+        self.direction_offset = self.damagerInfo.direction #Interactable.DIRECT_DICT[self.damagerInfo.direction]
+
+        self.behaviorSteering = BehaviourNone(self)
+
         #just for visualisation:
         image = pygame.Surface(rect.size).convert_alpha()   #todo image size from leveldata
         image.fill((255,0,0,60))
@@ -54,10 +60,10 @@ class Damager(Unit):
     def draw(self, surface):
         """draws the image"""
         self.cGraphic.update()
-        self.cGraphic.draw(self.image)   #self.cGraphic.draw(surface)
+        self.cGraphic.draw(self.image)
 
-    def update(self):
-        super().update()
+    def update(self,dt):
+        super().update(dt)
         self.duration-=1
         if(self.duration<0): self.kill()
 
@@ -80,6 +86,6 @@ class Damager(Unit):
             _func = getattr(otherSprite,"damage",None)
             if(_func!=None):
                 _func(self.damagerInfo.damage,self.direction)
-            self.direction_offset = pygame.Vector2(0,0)
+            self.direction_offset = Vector2(0,0)
         else:
             pass

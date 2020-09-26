@@ -1,12 +1,16 @@
 import os
 import pygame
+from src.Vector import Vector2
 import src.Const as Const
 import src.Support as Support
+
 import src.Interactables.Interactable
 from src.Interactables.Interactable import Interactable
 import src.Components.ComponentGraphics
 from src.Components.ComponentGraphics import UnitGraphics
 from src.GameState import GameState
+from src.AI.BehaviourSteering import BehaviourSteering
+from src.AI.SensorObstacle import SensorObstacle
 
 class Unit(Interactable):
 
@@ -17,7 +21,7 @@ class Unit(Interactable):
     MOVESOUND = None
     DEATHSOUND = None
 
-    def __init__(self, rect, speed, direction=pygame.K_RIGHT):
+    def __init__(self, rect, speed, direction=Vector2(1,0)):
         """
         Arguments are a rect representing the Player's location and
         dimension, the speed(in pixels/frame) of the Player, and the Player's
@@ -32,9 +36,9 @@ class Unit(Interactable):
         self.health = 3
         #todo:
         # vector types
-        #self.velocity = velocity
+        self.velocity = speed
         #self.heading = heading.normalized
-        #self.side = self.heading.perp
+        self.side = self.direction.perp
         # scalar types
         #self.mass = mass
         #self.max_speed = max_speed
@@ -42,9 +46,9 @@ class Unit(Interactable):
         #self.max_turn_rate = max_turn_rate
 
         #loading resources
-        if(type(self).SPRITEIMAGE == None):
-            type(self).SPRITEIMAGE = pygame.image.load(Const.resource_path("assets/sprites/skelly.png")).convert()
-            type(self).SPRITEIMAGE.set_colorkey(Const.COLOR_KEY)
+        #if(type(self).SPRITEIMAGE == None):
+        #    type(self).SPRITEIMAGE = pygame.image.load(Const.resource_path("assets/sprites/skelly.png")).convert()
+        #    type(self).SPRITEIMAGE.set_colorkey(Const.COLOR_KEY)
         if(type(self).ATTACKIMAGE == None):
             type(self).ATTACKIMAGE = pygame.Surface((30,30)).convert_alpha()
             type(self).ATTACKIMAGE.fill((100,0,0))
@@ -58,7 +62,12 @@ class Unit(Interactable):
             type(self).DEATHSOUND = pygame.mixer.Sound(Const.resource_path("assets/sounds/death.wav"))
             type(self).DEATHSOUND.set_volume(1.0)
         self.direction_stack = []  #Held keys in the order they were pressed.
-        self.direction_offset = pygame.Vector2(0,0)
+
+        self.sensorObstacle = SensorObstacle(self)
+        self.behaviorSteering = BehaviourSteering(self)
+        self.weight = 1.0
+
+        self.direction_offset = Vector2(0,0)
         self.coolDown_Attack = 0 #cooldown attack
         self.timer_Atk = 0
         self.attacking = False
@@ -77,7 +86,7 @@ class Unit(Interactable):
             if key in self.direction_stack:
                 self.direction_stack.remove(key)
             self.direction_stack.append(key)
-            self.direction = self.direction_stack[-1]
+            self.direction = Interactable.DIRECT_DICT[self.direction_stack[-1]]
 
     def pop_direction(self, key):
         """Pop a released key from the direction stack."""
@@ -85,11 +94,10 @@ class Unit(Interactable):
             if key in self.direction_stack:
                 self.direction_stack.remove(key)
             if self.direction_stack:
-                self.direction = self.direction_stack[-1]
+                self.direction = Interactable.DIRECT_DICT[self.direction_stack[-1]]
 
-    def update(self):
+    def update(self,dt):
         """Adjust the image and move as needed."""
-        now = pygame.time.get_ticks()
         
         if(self.status == Interactable.STAT_DIEING):
             self.frame+=1
@@ -106,8 +114,8 @@ class Unit(Interactable):
                 self.timer_Atk-=1
             else:
                 self.attacking = False
-            
-            if self.direction_stack or self.direction_offset != pygame.Vector2(0,0):
+            self.behaviorSteering.update(dt)
+            if self.direction_stack or self.direction_offset != Vector2(0,0):
                 self.movement( 0)
                 self.movement( 1)
             #if(self.canUseDoors):
@@ -148,8 +156,8 @@ class Unit(Interactable):
         """apply damage to the target"""
         self.health-=amount
         pygame.mixer.Channel(Interactable.SfxCh_Hit).play(type(self).HITSOUND)
-        self.direction_offset = Interactable.DIRECT_DICT[direction]
-        self.direction_offset = self.direction_offset.elementwise()*4*amount  #push in oposite direction on hit
+        self.direction_offset = direction #Interactable.DIRECT_DICT[direction]
+        self.direction_offset = self.direction_offset*4*amount  #push in oposite direction on hit
         
 
     def movement(self,  i):
@@ -160,7 +168,7 @@ class Unit(Interactable):
         if self.direction_stack:
             if(not pygame.mixer.Channel(Interactable.SfxCh_Move).get_busy()):
                 pygame.mixer.Channel(Interactable.SfxCh_Move).play(type(self).MOVESOUND)
-            direction_vector = Interactable.DIRECT_DICT[self.direction]
+            direction_vector = self.direction #Interactable.DIRECT_DICT[self.direction]
             self.hitrect[i] += self.speed*direction_vector[i]
 
         self.hitrect[i] += self.direction_offset[i]
@@ -170,7 +178,8 @@ class Unit(Interactable):
         while collisions:
             collision = collisions.pop()
             self.adjust_on_collision(self.hitrect, collision, i)
-        self.rect.center = self.hitrect.center
+        self.set_rects(self.hitrect.center,attribute="center")
+        #self.rect.center = self.hitrect.center
 
     def adjust_on_collision(self, rect_to_adjust, collide, i):
         """Adjust player's position if colliding with a solid block."""
@@ -181,7 +190,7 @@ class Unit(Interactable):
 
     def rotate_heading_to_face_position(self, target):
         to_target = (target - self.position).normalized
-        dot = self.heading.dot(to_target)
+        dot = self.direction.dot(to_target)
 
         # correct inaccuracy by clamping into range [-1, 1] to be valid for acos
         dot = dot if dot < 1 else 1
@@ -194,15 +203,15 @@ class Unit(Interactable):
             angle = self.max_turn_rate
 
         # rotate the heading and velocity
-        self.heading.rotate(angle / PI_DIV_180)
+        self.direction.rotate(angle / PI_DIV_180)
         self.velocity.rotate(angle / PI_DIV_180)
 
         # update/recreate the side also
         self.side = self.heading.perp
 
     def set_heading(self, new_heading):
-        self.heading = new_heading
-        self.side = self.heading.perp
+        self.direction = new_heading
+        self.side = self.direction.perp
 
     def enforce_non_penetration(self, entities):
         for entity in entities:

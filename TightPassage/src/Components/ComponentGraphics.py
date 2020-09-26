@@ -1,4 +1,5 @@
 import pygame
+from src.Vector import Vector2
 import src.Interactables.Interactable
 from src.Interactables.Interactable import Interactable
 
@@ -73,7 +74,7 @@ class UnitGraphics(ComponentGraphics):
 
     def update(self):
         now = pygame.time.get_ticks()
-        facing = pygame.key.name(self.parent.direction)
+        facing = Interactable.Direct_Dict_Inverse(self.parent.direction)
         if(self.parent.status==Interactable.STAT_DIEING):
             self.switchTo("die",facing)
         elif self.parent.direction_stack:

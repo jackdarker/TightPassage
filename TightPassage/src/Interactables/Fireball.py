@@ -2,6 +2,7 @@ import os
 import pygame
 import src.Const as Const
 import src.Support as Support
+from src.Vector import Vector2
 import src.Interactables.Interactable
 from src.Interactables.Interactable import Interactable
 import src.Interactables.Unit as Unit
@@ -16,7 +17,7 @@ from src.Components.ComponentGraphics import AnimData
 class Fireball(Unit):
     SPRITEIMAGE = None
 
-    def __init__(self, creator, speed, direction=pygame.K_RIGHT):
+    def __init__(self, creator, speed, direction=Vector2(1,0)):
         """
         Arguments are a rect representing the Player's location and
         dimension, the speed(in pixels/frame) of the Player, and the Player's
@@ -31,7 +32,7 @@ class Fireball(Unit):
         self.hitrect = pygame.Rect((0,0), hit_size)
         self.hitrect.center = self.rect.center
         self.parent = creator
-        self.direction_offset = Interactable.DIRECT_DICT[direction]
+        self.direction_offset = direction #Interactable.DIRECT_DICT[direction]
 
         anim = AnimData()
         name="walkright"
@@ -84,7 +85,7 @@ class Fireball(Unit):
 
     def movement(self, i):
         """i =0 is x; i=1 is y """
-        direction_vector = Interactable.DIRECT_DICT[self.direction]
+        direction_vector = self.direction_offset #Interactable.DIRECT_DICT[self.direction]
         self.hitrect[i] += self.speed*direction_vector[i]
         self.rect.center = self.hitrect.enter
         callback = self.collide_other(self.hitrect)  #Collidable callback created.
@@ -105,5 +106,5 @@ class Fireball(Unit):
         if(self.start_dieing()): #only react on the first hit
             _func = getattr(otherSprite,"damage",None)
             if(_func!=None):
-                _func(1,self.direction)
-            self.direction_offset = pygame.Vector2(0,0)
+                _func(1,self.direction_offset)
+            self.direction_offset = Vector2(0,0)

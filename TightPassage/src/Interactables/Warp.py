@@ -32,7 +32,7 @@ class Warp(Interactable):
         self.target = target
         self.world = world
 
-    def update(self):
+    def update(self,dt):
         state=GameState()
         if(not state.inGame or self.triggered):
             return

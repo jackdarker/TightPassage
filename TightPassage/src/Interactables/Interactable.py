@@ -1,4 +1,5 @@
 import pygame
+from src.Vector import Vector2
 
 class Interactable(pygame.sprite.Sprite):
 
@@ -18,10 +19,27 @@ class Interactable(pygame.sprite.Sprite):
     SfxCh_Hit = 3
 
     #map of movementkeys to movement direction
-    DIRECT_DICT = {pygame.K_LEFT  : pygame.Vector2(-1, 0),
-               pygame.K_RIGHT : pygame.Vector2( 1, 0),
-               pygame.K_UP    : pygame.Vector2( 0,-1),
-               pygame.K_DOWN  : pygame.Vector2( 0, 1)}
+    DIRECT_DICT = {pygame.K_LEFT  : Vector2(-1, 0),
+               pygame.K_RIGHT : Vector2( 1, 0),
+               pygame.K_UP    : Vector2( 0,-1),
+               pygame.K_DOWN  : Vector2( 0, 1)}
+
+    Facing_Left ="left"
+    Facing_Right ="right"
+    Facing_Up ="up"
+    Facing_Down ="down"
+    @staticmethod
+    def Direct_Dict_Inverse(direction):
+        dir = direction.normalize_copy()
+        if(dir[0]>0.5 and dir[1]<0.5):  #todo is there a better way?
+            return(Interactable.Facing_Right)
+        elif(dir[0]<-0.5 and dir[1]<0.5):
+            return(Interactable.Facing_Left)
+        elif(dir[0]<0.5 and dir[1]>0.5):
+            return(Interactable.Facing_Down)
+        elif(dir[0]<0.5 and dir[1]<-0.5):
+            return(Interactable.Facing_Up)
+        return(Interactable.Facing_Down)
 
     #codes for self.status
     STAT_ALIVE = "alive"
@@ -62,6 +80,7 @@ class Interactable(pygame.sprite.Sprite):
         """
         setattr(self.rect, attribute, value)
         self.hitrect.center = self.rect.center
+        self.position = Vector2(self.rect.center[0],self.rect.center[1])
 
     def collide_other(self,myrect):
         """ The other argument is a pygame.Rect that you would like to use for
@@ -72,7 +91,7 @@ class Interactable(pygame.sprite.Sprite):
             return myrect.colliderect(two.rect)
         return collide
 
-    def update(self):
+    def update(self,dt):
         pass
 
     def addObserver(self, observer):

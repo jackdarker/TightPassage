@@ -37,7 +37,7 @@ class GameMode():
         
     def processInput(self):
         raise NotImplementedError()
-    def update(self):
+    def update(self,dt):
         raise NotImplementedError()
     def render(self, window):
         raise NotImplementedError()

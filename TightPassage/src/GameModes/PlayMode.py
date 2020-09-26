@@ -36,7 +36,8 @@ class PlayMode(GameMode.GameMode):
                         attack.addObserver(self)
                         self.state.shoots.add(attack)
                         self.group.add(attack)
-                else: self.state.player.add_direction(event.key)
+                else: 
+                    self.state.player.add_direction(event.key)
             elif event.type == pygame.KEYUP:
                 self.state.player.pop_direction(event.key)
             #elif event.type == pygame.MOUSEMOTION:
@@ -126,15 +127,15 @@ class PlayMode(GameMode.GameMode):
                         self.state.player.set_rects(door.rect.center, "center") #.move(-64,0)
         pass
 
-    def update(self):
-        self.group.update()
+    def update(self,dt):
+        self.group.update(dt)
         return
         
     def render(self, window):
         #window.fill(Const.BACKGROUND_COLOR)
          # center the map/screen on our Hero
-        #   no camera tracking? 
-        #self.group.center(self.levelData.player.rect.center)
+        #  todo no camera tracking? 
+        #self.group.center(self.state.player.rect.center)
         for unit in self.state.units:
             unit.draw(window)   #todo sort z depth
         self.state.player.draw(window)
@@ -143,6 +144,33 @@ class PlayMode(GameMode.GameMode):
         # draw the map and all sprites
         self.group.draw(window)
         return
+
+    def drawdebug(self, window):
+        self.draw_debug_vectors(window,self.state.player)
+        pass
+
+    def draw_wander_info(self,screen, vehicle):
+        # green circle
+        pos = vehicle.position + vehicle.behaviorSteering.wander_distance * vehicle.heading * vehicle.bounding_radius
+        pygame.draw.circle(screen, (0, 255, 0), pos.as_xy_tuple(int), int(vehicle.behaviorSteering.wander_radius * vehicle.bounding_radius), 1)
+        screen.set_at(pos.as_xy_tuple(int), (0, 255, 0))
+
+        # red circle
+        import steeringbehaviors
+        # _wander_target should not be used directly (its in vehicle local coordinates)
+        target_world = steeringbehaviors.point_to_world_2d(vehicle.behaviorSteering._wander_target, vehicle.heading, vehicle.side, vehicle.position)
+        pos = vehicle.position + (target_world - vehicle.position) * vehicle.bounding_radius + \
+                vehicle.behaviorSteering.wander_distance * vehicle.heading * vehicle.bounding_radius
+        pygame.draw.circle(screen, (255, 0, 0), pos.as_xy_tuple(int), 7, 1)
+
+    def draw_debug_vectors(self,screen, vehicle):
+        # vehicle axis, (r, g, b) == (x_axis, y_axis, z_axis)
+        pygame.draw.line(screen, Const.RED, vehicle.position.as_xy_tuple(), (vehicle.position + vehicle.direction * 20).as_xy_tuple(), 1)
+        pygame.draw.line(screen, Const.BLUE, vehicle.position.as_xy_tuple(), (vehicle.position + vehicle.side * 20).as_xy_tuple(), 1)
+
+        # steering force
+        force_end = vehicle.position + vehicle.behaviorSteering.steering_force
+        pygame.draw.line(screen, Const.PURPLE, vehicle.position.as_xy_tuple(), force_end.as_xy_tuple(), 1)
 
 
     def OBSOLETE_renderLayer(self,surface,layer,offset=(0,0)): #not used , using pyscroll

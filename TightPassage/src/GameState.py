@@ -1,5 +1,5 @@
 import pygame
-from pygame.math import Vector2
+from src.Vector import Vector2
 
 class GameState():
     """Holds all the data of the game

@@ -1,3 +1,4 @@
+import numbers
 from math import hypot
 #from math import radians
 #from math import degrees
@@ -35,8 +36,12 @@ def sign(value):
 
 class Vector2(object):
     def __init__(self, x=0.0, y=0.0):
-        self.x = x
-        self.y = y
+        if(isinstance(x, numbers.Number)):
+            self.x = x
+            self.y = y
+        else:#maybe a tuple?
+            self.x=x[0]
+            self.y=x[1]
 
     def __add__(self, other):
         if isinstance(other, Vector2):
@@ -148,6 +153,10 @@ class Vector2(object):
     def is_zero(self):
         return self.x * self.x + self.y * self.y < EPSILON
 
+    def as_xy_tuple(self):
+        """returns tuple (x, y), z is supressed"""
+        return self.x, self.y
+
     # Define our properties
     @staticmethod
     def zero():
@@ -205,7 +214,7 @@ class Vector2(object):
                                 doc="""returns new vector with unit length""")
     def normalize(self):
         """modifys to normalized Vector"""
-        length = self.length()
+        length = self.length
         if length > 0:
             self.x /= length
             self.y /= length
@@ -897,7 +906,7 @@ def dot(vec1, vec2):
 def distance(vec1, vec2):
     """Returns the distance between two Vectors"""
     vec3 = vec2 - vec1
-    return vec3.length()
+    return vec3.length
 
 
 def angle(vec1, vec2):
@@ -1178,24 +1187,26 @@ class Matrix4(object):
         return Matrix4.x_rotate(vec3.x) * Matrix4.y_rotate(vec3.y) * Matrix4.z_rotate(vec3.z)
 
 """line-intersection code from dr0id-book_programming_game_ai_by_example"""
-def line_intersection_2d(a, b, c, d):
-    r_top = (a.y - c.y) * (d.x - c.x) - (a.x - c.x) * (d.y - c.y)
-    s_top = (a.y - c.y) * (b.x - a.x) - (a.x - c.x) * (b.y - a.y)
-    bot = (b.x - a.x) * (d.y - c.y) - (b.y - a.y) * (d.x - c.x)
+def line_intersection_2d(A, B, C, D):
+    rTop = (A.y - C.y) * (D.x - C.x) - (A.x - C.x) * (D.y - C.y)
+    rBot = (B.x - A.x) * (D.y - C.y) - (B.y - A.y) * (D.x - C.x)
 
-    if bot == 0:  # //parallel
-        return False
+    sTop = (A.y - C.y) * (B.x - A.x) - (A.x - C.x) * (B.y - A.y)
+    #sBot = (B.x - A.x) * (D.y - C.y) - (B.y - A.y) * (D.x - C.x)
 
-    inv_bot = 1.0 / bot
-    r = r_top * inv_bot
-    s = s_top * inv_bot
+    if (rBot == 0): #or (sBot == 0):
+        # lines are parallel
+        return False, None, None
+
+    r = rTop / rBot
+    s = sTop / rBot
 
     if (r > 0) and (r < 1) and (s > 0) and (s < 1):
-        # lines intersect
-        return True
-
-    # lines do not intersect
-    return False
+        dist = distance(A,B) * r
+        point = A + r * (B - A)
+        return True, dist, point
+    else:
+        return False, 0, None
 
 
 def line_intersection_point_2d(a, b, c, d):

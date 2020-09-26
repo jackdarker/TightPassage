@@ -2,6 +2,7 @@
 import pygame
 import src.Const as Const
 import src.Support as Support
+from src.Vector import Vector2
 import src.Interactables.Unit
 from src.Interactables.Unit import Unit
 import src.Components.ComponentGraphics
@@ -10,7 +11,7 @@ from src.Components.ComponentGraphics import AnimData
 
 class Imp(Unit):
 
-    def __init__(self, rect,  direction=pygame.K_RIGHT):
+    def __init__(self, rect,  direction=Vector2(1,0)):
         """
 
         """

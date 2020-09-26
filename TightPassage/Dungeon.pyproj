@@ -32,6 +32,12 @@
     <Compile Include="src\AI\AI.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="src\AI\BehaviourSteering.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\AI\SensorObstacle.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="src\Components\Camera.py">
       <SubType>Code</SubType>
     </Compile>
@@ -42,6 +48,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\Components\Pool.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\Components\Regulator.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\Components\ResourceManager.py">

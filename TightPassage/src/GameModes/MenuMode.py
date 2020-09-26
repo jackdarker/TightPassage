@@ -39,7 +39,7 @@ class MenuMode(GameMode.GameMode):
         events = pygame.event.get()
         self.menu.update(events)
 
-    def update(self):
+    def update(self,dt):
         pass
         
     def render(self, window):

@@ -36,23 +36,24 @@ class App(GameModeObserver.GameModeObserver):
         #self.moviemode.show()
         self.menumode.show_MainMenu()
 
-    def on_loop(self):
+    def on_loop(self,dt):
         """update all modes"""
         #processInput will consume all events, so only one mode should be called
         if(self.menumode.inMenu()):
             self.menumode.processInput()
-            self.menumode.update()
+            self.menumode.update(dt)
         elif(self.moviemode.enabled):
             self.moviemode.processInput()
-            self.moviemode.update()
+            self.moviemode.update(dt)
         elif(self.playmode!=None):
             self.playmode.processInput()
-            self.playmode.update()
+            self.playmode.update(dt)
 
     def on_render(self):
         """render all modes"""
         if(self.playmode!=None):
             self.playmode.render(self.screen)
+            self.playmode.drawdebug(self.screen)
         elif(self.moviemode.enabled):
             self.moviemode.render(self.screen)
         self.menumode.render(self.screen)
@@ -65,11 +66,9 @@ class App(GameModeObserver.GameModeObserver):
         if self.on_init() == False:
             self._running = False
         while( self._running ):
-            #for event in pygame.event.get():
-            #    self.on_event(event)
-            self.on_loop()
-            self.on_render()
-            self.clock.tick(Const.FPS)
+            dt = self.clock.tick(Const.FPS)
+            self.on_loop(dt)
+            self.on_render() 
         self.on_cleanup()
 
     def on_cleanup(self):

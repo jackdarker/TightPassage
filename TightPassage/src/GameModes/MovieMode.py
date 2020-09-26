@@ -43,7 +43,7 @@ class MovieMode(GameMode.GameMode):
                     self.notifyShowMenuRequested()
                     self.enabled = False
                     
-    def update(self):
+    def update(self,dt):
         self.cGraphic.update()  #Todo center graphic on Window
 
     def render(self, window):

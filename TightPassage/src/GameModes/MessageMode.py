@@ -19,7 +19,7 @@ class MessageMode(GameMode.GameMode):
                 or event.key == pygame.K_RETURN:
                     self.notifyShowMenuRequested()
                     
-    def update(self):
+    def update(self,dt):
         pass
         
     def render(self, window):
