@@ -4,6 +4,7 @@ import src.Const as Const
 import src.Support as Support
 import src.GameMode as GameMode
 import src.Interactables.Block as Block
+import src.Interactables.Container as Container
 import src.Interactables.Unit as Unit
 import src.Interactables.Player as Player
 import src.Interactables.Imp as Imp
@@ -36,6 +37,8 @@ class PlayMode(GameMode.GameMode):
                         attack.addObserver(self)
                         self.state.shoots.add(attack)
                         self.group.add(attack)
+                elif event.key == Player.Player.KEY_USE:
+                    self.state.player.interact()
                 else: 
                     self.state.player.add_direction(event.key)
             elif event.type == pygame.KEYUP:
@@ -78,6 +81,10 @@ class PlayMode(GameMode.GameMode):
 
     def loadLevel(self,targetNode, playerSpawnPoint=None):
         #cleanup actual level
+        if(self.state.player!=None):
+            self.state.player.removeObserver(self)
+        for shoots in self.state.shoots:
+            shoots.removeObserver(self)
         for door in self.state.doors:
             door.removeObserver(self)
         if(self.group!=None):
@@ -112,6 +119,8 @@ class PlayMode(GameMode.GameMode):
         for door in self.state.doors:
             door.addObserver(self)
 
+        self.state.player.addObserver(self)    #to get notifyOnInteract
+             
         if(playerSpawnPoint!=None):
             if(type(playerSpawnPoint)==pygame.Rect):
                 self.state.player.set_rects(playerSpawnPoint.center, "center")
@@ -201,7 +210,7 @@ class PlayMode(GameMode.GameMode):
         #kill shoot if shoot hits wall
         if self.state.shoots.has(sprite) and self.state.obstacles.has(otherSprite):
            sprite.OnHit(otherSprite)
-           #sprite.kill()
+
         elif self.state.shoots.has(sprite): 
             #check if non-player-shoot hits player
             if self.state.player == otherSprite and sprite.parent!=self.state.player:
@@ -214,6 +223,15 @@ class PlayMode(GameMode.GameMode):
             else:
                 pass
         return
+
+    def OnInteract(self,sprite,otherSprite):
+        """called by notifyOnInteract"""
+        if self.state.player == sprite:
+            if (type(otherSprite)==Container.Chest):
+                otherSprite.postInteraction()
+                self.notifyShowPopupRequested("The chest is empty")
+                pass
+        pass
 
     def warpTriggered(self,warp):
         """called on door/teleporter trigger"""

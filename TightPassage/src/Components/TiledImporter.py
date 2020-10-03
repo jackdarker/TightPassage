@@ -2,12 +2,13 @@ import pygame
 import numpy as np
 import src.Const as Const
 from src.GameState import GameState
-from pytmx.util_pygame import load_pygame
+from pytmx.util_pygame import  load_pygame
 import src.Interactables.Block as Block
 import src.Interactables.Unit as Unit
 import src.Interactables.Player as Player
 import src.Interactables.Imp as Imp
 import src.Interactables.Warp as Warp
+import src.Interactables.Container as Container
 
 class TiledImporter():
     """imports a map defined in Tiled and stores it in GameState-Singleton"""
@@ -17,7 +18,7 @@ class TiledImporter():
         pass
 
     def loadMap(self,filename):
-        self.tiled_map = load_pygame(filename)
+        self.tiled_map = load_pygame(filename)      #todo error when loading objects with property of type 'object'
         self.parseObjects()
         return self.tiled_map
 
@@ -43,4 +44,11 @@ class TiledImporter():
                 self.playerSpawn = pygame.Rect(object.x, object.y,64,64)
                 if(self.state.player == None): self.state.player =  Player.Player((0,0,0,0), 3)
                 self.state.player.set_rects(self.playerSpawn.center, "center")
+            elif(object.type=='Trigger'):
+                if(object.ID=='Chest'):
+                    obstacle = Container.Chest((0,0,32,32)) 
+                    obstacle.image = object.image
+                    obstacle.set_rects(pygame.Rect(object.x, object.y,32,32).center, "center")
+                    self.state.units.add(obstacle)
+                pass
 

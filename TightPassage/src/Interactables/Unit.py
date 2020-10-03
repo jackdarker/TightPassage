@@ -188,6 +188,7 @@ class Unit(Interactable):
         else:
             rect_to_adjust[i] = collide.rect[i]+collide.rect.size[i]
 
+#todo currently unused
     def rotate_heading_to_face_position(self, target):
         to_target = (target - self.position).normalized
         dot = self.direction.dot(to_target)

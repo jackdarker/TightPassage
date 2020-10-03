@@ -46,12 +46,12 @@ class Damager(Unit):
         self.hitrect.center = self.rect.center
         self.parent = creator
         self.duration = self.damagerInfo.duration
-        self.direction_offset = self.damagerInfo.direction #Interactable.DIRECT_DICT[self.damagerInfo.direction]
+        self.direction_offset = self.damagerInfo.direction
 
         self.behaviorSteering = BehaviourNone(self)
 
         #just for visualisation:
-        image = pygame.Surface(rect.size).convert_alpha()   #todo image size from leveldata
+        image = pygame.Surface(rect.size).convert_alpha()
         image.fill((255,0,0,60))
         anim = AnimData()
         anim.frames = [image]

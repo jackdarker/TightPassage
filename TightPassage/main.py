@@ -19,6 +19,7 @@ class App(GameModeObserver.GameModeObserver):
         self.screen = None  #surface to paint on
         self.playmode = None    #statemachine of the game
         self.menumode = None    #menu overlay logic
+        self.interactmode = None    #actual interaction like dialogs,...
         self.state = GameState.GameState()  #game data
  
     def on_init(self):
@@ -33,7 +34,7 @@ class App(GameModeObserver.GameModeObserver):
         intro.loadImageStrip(Const.resource_path("assets\sprites\Movie"),24)
         self.moviemode = MovieMode.MovieMode(intro)
         self.moviemode.addObserver(self)
-        #self.moviemode.show()
+        #self.moviemode.show()  #show the intro
         self.menumode.show_MainMenu()
 
     def on_loop(self,dt):
@@ -45,6 +46,9 @@ class App(GameModeObserver.GameModeObserver):
         elif(self.moviemode.enabled):
             self.moviemode.processInput()
             self.moviemode.update(dt)
+        elif(self.interactmode!=None and self.interactmode.enabled):
+            self.interactmode.processInput()
+            self.interactmode.update(dt)
         elif(self.playmode!=None):
             self.playmode.processInput()
             self.playmode.update(dt)
@@ -54,6 +58,8 @@ class App(GameModeObserver.GameModeObserver):
         if(self.playmode!=None):
             self.playmode.render(self.screen)
             self.playmode.drawdebug(self.screen)
+        if(self.interactmode!=None and self.interactmode.enabled):
+            self.interactmode.render(self.screen)
         elif(self.moviemode.enabled):
             self.moviemode.render(self.screen)
         self.menumode.render(self.screen)
@@ -92,6 +98,11 @@ class App(GameModeObserver.GameModeObserver):
     def showMenuRequested(self):
         """notification from gamemode"""
         self.menumode.show_MainMenu()
+
+    def showPopupRequested(self,Message):
+        """notification from gamemode"""
+        self.interactmode = MessageMode.MessageMode(self.state,Message)
+        #self.interactmode.show()
 
     def display_fps(self):
         """Show the program's FPS in the window handle."""

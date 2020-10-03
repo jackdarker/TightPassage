@@ -6,7 +6,9 @@ class GameModeObserver():
         pass
     def showMenuRequested(self):
         pass
-    def showGameRequested(self):
+    def showPopupRequested(self):
+        pass
+    def showGameRequested(self,Message):
         pass
     def gameWon(self):
         pass

@@ -21,4 +21,5 @@ Todo:
 - loot and enemies!
 
 I tried to reuse some components from different python-games/-engines:
-- RagnarokEngine3
+- RagnarokEngine3#
+- libRPG

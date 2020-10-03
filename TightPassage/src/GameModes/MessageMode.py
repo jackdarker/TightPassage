@@ -2,11 +2,13 @@ import pygame
 import src.GameMode as GameMode
 
 class MessageMode(GameMode.GameMode):
-    def __init__(self,message):     
-        super().__init__()
+    def __init__(self,state,message):
+        self.state = state
+        super().__init__(self.state)
         #self.font = pygame.font.Font("assets/ui/BD_Cartoon_Shout.ttf", 36)
         self.font = pygame.font.Font(pygame.font.get_default_font(),36)
         self.message = message
+        self.enabled=True
 
     def processInput(self):
         for event in pygame.event.get():
@@ -17,7 +19,7 @@ class MessageMode(GameMode.GameMode):
                 if event.key == pygame.K_ESCAPE \
                 or event.key == pygame.K_SPACE \
                 or event.key == pygame.K_RETURN:
-                    self.notifyShowMenuRequested()
+                    self.resume_game()
                     
     def update(self,dt):
         pass
@@ -27,3 +29,6 @@ class MessageMode(GameMode.GameMode):
         x = (window.get_width() - surface.get_width()) // 2
         y = (window.get_height() - surface.get_height()) // 2
         window.blit(surface, (x, y))
+
+    def resume_game(self):
+        self.enabled=False

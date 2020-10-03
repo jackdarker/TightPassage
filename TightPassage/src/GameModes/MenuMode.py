@@ -4,10 +4,9 @@ import src.Const as Const
 import src.GameMode as GameMode
 
 class MenuMode(GameMode.GameMode):
-    def __init__(self,screen,state):     
+    def __init__(self,screen,state):
         super().__init__(state)
-        self.screen = screen
-        self.menu_screen = self.screen.copy()
+        self.menu_screen = screen.copy()
         self.menu_screen.fill((0, 0, 0, 200))
         self.menu_screen.set_alpha(100) #why does fill with RGB+alpha not work?
         self.menu = None

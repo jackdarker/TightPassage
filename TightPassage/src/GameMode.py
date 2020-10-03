@@ -22,6 +22,9 @@ class GameMode():
     def notifyShowMenuRequested(self):
         for observer in self.__observers:
             observer.showMenuRequested()
+    def notifyShowPopupRequested(self,Message):
+        for observer in self.__observers:
+            observer.showPopupRequested(Message)
     def notifyShowGameRequested(self):
         for observer in self.__observers:
             observer.showGameRequested()

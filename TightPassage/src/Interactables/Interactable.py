@@ -65,10 +65,11 @@ class Interactable(pygame.sprite.Sprite):
         self.redraw = False  #Force redraw if needed.
         self.frame  = 0
         self.animate_timer = 0.0
-        self.animate_fps = 7.0  #todo animationdataclass
+        #self.animate_fps = 7.0  #todo animationdataclass
         self.die_timer = 0.0
         self.image = None   # the image to render in next frame
         self.enabled = True #enables update evaluation
+        self.acceptInteract = False #response for interaction request from player exist?
 
     ID = property(lambda self: self._id, "unique id")
 
@@ -102,5 +103,11 @@ class Interactable(pygame.sprite.Sprite):
             self.__observers.remove(observer)
 
     def notifyOnHit(self,otherSprite):
+        """an Interactable should cal this if it detects that it is colliding with another Interactable"""
         for observer in self.__observers:
             observer.OnHit(self,otherSprite)
+
+    def notifyOnInteract(self,otherSprite):
+        """trigger this if the player is interacting with something"""
+        for observer in self.__observers:
+            observer.OnInteract(self,otherSprite)

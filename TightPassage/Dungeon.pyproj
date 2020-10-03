@@ -5,7 +5,7 @@
     <ProjectGuid>084ed0e8-07a2-41e4-8921-b73a5154c88a</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>main.py</StartupFile>
+    <StartupFile>src\FSM.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -35,7 +35,19 @@
     <Compile Include="src\AI\BehaviourSteering.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="src\AI\Goals.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\AI\SensorNoise.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="src\AI\SensorObstacle.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\BattleMode\BattleController.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\BattleMode\BattleScreen.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\Components\Camera.py">
@@ -45,6 +57,12 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\Components\MazeGenerator.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\Components\MessageDispatcher.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\Components\Party.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\Components\Pool.py">
@@ -59,7 +77,16 @@
     <Compile Include="src\Components\TiledImporter.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="src\Components\Triggers.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="src\Components\UpdatableObj.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\FSM.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\GameModes\BattleMode.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\GameModes\MovieMode.py">
@@ -102,6 +129,9 @@
     <Compile Include="src\GameState.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="src\Interactables\Container.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="src\Interactables\Damager.py">
       <SubType>Code</SubType>
     </Compile>
@@ -123,7 +153,7 @@
     <Compile Include="src\Interactables\Warp.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\Layer.py">
+    <Compile Include="src\Layers\Layer.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\Layers\ArrayLayer.py">
@@ -166,6 +196,7 @@
     <Folder Include="src\GameModes\" />
     <Folder Include="src\Components\" />
     <Folder Include="src\AI\" />
+    <Folder Include="src\BattleMode\" />
     <Folder Include="src\TopDown\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />

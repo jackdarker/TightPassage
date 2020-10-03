@@ -134,3 +134,15 @@ class Player(Unit):
             #return Fireball(self, 10, self.direction)
         else:
             return None
+
+    def interact(self):
+        """check if there is anything nearby to interact with"""
+        _rect = self.hitrect.copy()
+        _rect.move_ip(self.direction*5) #todo in front of the own hitrect
+        callback = self.collide_other(_rect)  #Collidable callback created.
+        collisions = pygame.sprite.spritecollide(self, self.levelData.units, False, callback)
+        while collisions:
+            collision = collisions.pop()
+            self.notifyOnInteract(collision)
+            return
+        pass

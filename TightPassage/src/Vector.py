@@ -1209,29 +1209,6 @@ def line_intersection_2d(A, B, C, D):
         return False, 0, None
 
 
-def line_intersection_point_2d(a, b, c, d):
-    r_top = (a.y - c.y) * (d.x - c.x) - (a.x - c.x) * (d.y - c.y)
-    r_bot = (b.x - a.x) * (d.y - c.y) - (b.y - a.y) * (d.x - c.x)
-    s_top = (a.y - c.y) * (b.x - a.x) - (a.x - c.x) * (b.y - a.y)
-    s_bot = (b.x - a.x) * (d.y - c.y) - (b.y - a.y) * (d.x - c.x)
-
-    if r_bot == 0 or s_bot == 0:  # //parallel
-        return False, None, None
-
-    r = r_top / r_bot
-    s = s_top / s_bot
-
-    if (r > 0) and (r < 1) and (s > 0) and (s < 1):
-        # lines intersect
-
-        _dist = a.get_distance(b) * r
-        _point = a + r * (b - a)
-        return True, _point, _dist
-
-    # lines do not intersect
-    return False, None, None
-
-
 def dist_to_line_segment_sq(a, b, p):
     """
     given a line segment AB and a point P, this function calculates the
@@ -1293,7 +1270,7 @@ def find_closest_point_of_intersection_with_walls(a, b, walls):
     distance = sys.maxsize
     this_impact_point = None
     for wall in walls:
-        is_intersecting, impact_point, dist = line_intersection_point_2d(a, b, wall.start, wall.end)
+        is_intersecting, impact_point, dist = line_intersection_2d(a, b, wall.start, wall.end)
         if is_intersecting:
             if dist < distance:
                 distance = dist

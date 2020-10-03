@@ -22,8 +22,8 @@ class BehaviourSteering(BehaviourNone):
     """
 
     def __init__(self, unit):
-        self.mob = unit
-        self.steering_force = Vector2.zero()
+        self.mob = unit     #vehicle this behaviour is parented to
+        self.steering_force = Vector2.zero()    # calculated force applied to the vehicle
         pass
 
     def point_to_world_2d(local_point, x_axis, y_axis, global_pos):
@@ -105,7 +105,7 @@ class BehaviourSteering(BehaviourNone):
                         dist_to_closest = dist_to_current
                         closest_wall = obstacle
                         closest_point = point
-                        closest_normal = normal
+                        closest_normal = normal.normalized
 
             if closest_wall:
                 overshoot = feeler - closest_point
