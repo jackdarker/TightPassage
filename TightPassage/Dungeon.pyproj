@@ -5,7 +5,7 @@
     <ProjectGuid>084ed0e8-07a2-41e4-8921-b73a5154c88a</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>src\FSM.py</StartupFile>
+    <StartupFile>test\battleTest.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -23,10 +23,7 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="framework.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="scrap\module1.py">
+    <Compile Include="scrap\framework.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\AI\AI.py">
@@ -48,6 +45,12 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\BattleMode\BattleScreen.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\Components\Skill.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\Components\SkillDB.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\Components\Camera.py">
@@ -98,7 +101,7 @@
     <Compile Include="src\CEvent.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="FourWayMove.py">
+    <Compile Include="scrap\FourWayMove.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="scrap\MainMenu.py">
@@ -165,7 +168,7 @@
     <Compile Include="scrap\module12.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="module1.py">
+    <Compile Include="scrap\module1.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\Layers\OgmoImporter.py">
@@ -183,12 +186,16 @@
     <Compile Include="src\Vector.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="test\battleTest.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="Global|PythonCore|3.6" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="assets\" />
+    <Folder Include="test\" />
     <Folder Include="scrap\" />
     <Folder Include="src\" />
     <Folder Include="src\Layers\" />

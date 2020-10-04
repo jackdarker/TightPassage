@@ -198,6 +198,7 @@ class Party(object):
         self.leader = new_leader
         if self.avatar is not None:
             self.avatar.reload_image()
+        pass
 
 
 class CharacterReserve(object):
@@ -370,7 +371,7 @@ class Character(object):
     from the CharacterReserve.
     """
 
-    def __init__(self, name, image_file=None, index=0):
+    def __init__(self, name, image_file=None, index=0,AI = None):
         """
         *Constructor.*
 
@@ -388,7 +389,11 @@ class Character(object):
         :attr:`image`
             ObjectImage with the character's sprites.
         """
+        self.AI = AI
         self.name = name
+        self.skills = []
+        self.skillInNextTurn = None
+        self.effects = []
         self.image_file = image_file
         if image_file:
             self.image = ObjectImage(self.image_file, index)

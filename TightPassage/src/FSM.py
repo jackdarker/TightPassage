@@ -38,10 +38,12 @@ class State(object):
         return "<%s('%s')@%s>" % (type(self).__name__, self.name, id(self))
 
 class FSM(object):
-    def __init__(self,states,initialState):
+    def __init__(self,model,states,initialState):
         """initialises the machine with a list of states and the name of the initial state
         this will alos trigger to switch to the inital state
+        model is  the data that the machine is working on
         """
+        self.model = model
         self.currState = None
         self.states = {}
         for state in states:
