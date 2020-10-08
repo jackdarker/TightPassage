@@ -1,6 +1,9 @@
 import pygame
 from src.FSM import FSM,State
 import src.Const as Const
+from src.BattleMode.BattleScreen import SkillRenderData
+from src.Components.Skill import SkillResult
+from src.Components.SkillDB import *
 
 class BattleController():
     """contains the logic of the battlesystem
@@ -14,7 +17,8 @@ class BattleController():
         self.fsm = FSM(model=self,
                        states=[StateBeforeInit(self),StateInit(self),StateCheckDefeat(self),StateNewTurn(self),
                           StateCombatantSelection(self),StateCombatantAction(self),
-                          StateTurnEnd(self),StatePlayerLoss(self),StatePlayerVictory(self),
+                          StateTurnEnd(self),
+                          StatePlayerLoss(self),StatePlayerVictory(self),StatePlayerFlee(self),
                           StateDeinit(self)],
                        initialState=StateBeforeInit.__name__)
         pass
@@ -22,21 +26,36 @@ class BattleController():
     def update(self,dt):
         self.fsm.checkTransition()  #todo we dont need to poll this on every cycle
 
-    def selectSkillForCharacter(self,charname,skillname):
-        self.battleData.getCharacterByID(charname).skillInNextTurn = skillname
+    def selectSkillForCharacter(self,charname,skillname,targets):
+        char =self.battleData.getCharacterByID(charname)
+        char.skillInNextTurn = skillname
+        char.skillTarget = targets
 
-    def isPlayerDefeated(self):
-        #is playerteam defeated?
-        return False
+    def isTeamDefeated(self,faction, invers=False):
+        #is playerteam/other team defeated?
+        defeat = False
+        for team in self.battleData.teams:
+            if((team.faction != faction and invers==False) or
+               (team.faction == faction and invers==True)): break
+            defeat = True
+            for char in team.chars:
+                defeat = defeat and (team.get_char(char).stats.HP<=0)
+        return defeat
 
-    def isOpponentDefeated(self):
-        #is other team defeated?
+    def isTeamFleeing(self,faction, invers=False):
+        #is playerteam/other team defeated?
+        for team in self.battleData.teams:
+            if((team.faction != faction and invers==False) or
+               (team.faction == faction and invers==True)): break
+            for char in team.chars:
+                for effect in team.get_char(char).effects:
+                    if( type(effect) == EffFlee):
+                        return True
         return False
 
     #methods called by view via observer
     def OnAnimationDone(self,ID):
         self.AnimationDone[ID]=True
-
 
 class StateBeforeInit(State):
     def __init__(self,battleController):
@@ -76,9 +95,12 @@ class StateCheckDefeat(State):
 
     def checkTransition(self):
         #evaluate if team is defeated and switch to postBattleScene
-        if(self.controller.isPlayerDefeated()):
+        self.controller
+        if(self.controller.isTeamFleeing('Player')):
+            return StatePlayerFlee.__name__
+        elif(self.controller.isTeamDefeated('Player')):
             return StatePlayerLoss.__name__
-        elif(self.controller.isOpponentDefeated()):
+        elif(self.controller.isTeamDefeated('Player',invers=True)):
             return StatePlayerVictory.__name__
         else:   return StateNewTurn.__name__
 
@@ -131,7 +153,10 @@ class StateCombatantSelection(State):
                 return StateCombatantSelection.__name__
             else:
                 #otherwise execute move
+                self.controller.battleData.resetNextCharacter() #reset iterator since looping again in next state
+                self.controller.battleData.nextCharacter()
                 return StateCombatantAction.__name__
+        pass
 
 class StateCombatantAction(State):
     AnimID = hash('OnCombatAction')
@@ -143,57 +168,97 @@ class StateCombatantAction(State):
     def onEnter(self):
         #execute skill
         self.controller.AnimationDone[__class__.AnimID]=False
-        self.controller.battleData.notifyOnCombatAction(__class__.AnimID)
+        char = self.controller.battleData.getCharacterByID(self.controller.battleData.currCharacter)
+        #maybe remove dead chars from combatants
+        move = self.controller.battleData.calculateSkillResult(char)
+        self.controller.battleData.applySkillResult(move)
+        self.controller.battleData.notifyOnCombatAction(__class__.AnimID, move)
         pass
 
     def checkTransition(self):
         #wait until view animation is done
         if(self.controller.AnimationDone[__class__.AnimID]==True):
-            #maybe remove dead chars from combatants
             #if there are more combatants switch to the next one
-            return StateCombatantAction.__name__
+            self.controller.battleData.nextCharacter()
+            if(not self.controller.battleData.finishTurn ):
+                #if there are more combatants switch to the next one
+                return StateCombatantAction.__name__
 
             #otherwise end turn
             return StateTurnEnd.__name__
+        pass
 
 class StateTurnEnd(State):
+    AnimID = hash('OnTurnEnd')
     def __init__(self,battleController):
         super().__init__(__class__.__name__)
         self.controller = battleController
 
     def onEnter(self):
-        self.controller.battleData.notifyOnNewTurn()
+        #self.controller.battleData.notifyOnTurnDone(__class__.AnimID)
         pass
 
     def checkTransition(self):
         #start next cycle
         return StateCheckDefeat.__name__
+    pass
 
 class StatePlayerLoss(State):
+    AnimID = hash('OnDefeat')
     def __init__(self,battleController):
         super().__init__(__class__.__name__)
         self.controller = battleController
 
     def onEnter(self):
+        #self.battleData..postBattle(playerdefeat=True)
         #show defeat screen
+        self.controller.AnimationDone[__class__.AnimID]=False
+        self.controller.battleData.notifyOnDefeat(__class__.AnimID)
         pass
 
     def checkTransition(self):
         #wait until confirmation, then terminate
-        return StateDeinit.__name__
+        if(self.controller.AnimationDone[__class__.AnimID]==True):
+            return StateDeinit.__name__
+        pass
 
 class StatePlayerVictory(State):
+    AnimID = hash('OnVictory')
     def __init__(self,battleController):
         super().__init__(__class__.__name__)
         self.controller = battleController
 
     def onEnter(self):
+        #self.battleData..postBattle(playerdefeat=False)
         #show win screen
+        self.controller.AnimationDone[__class__.AnimID]=False
+        self.controller.battleData.notifyOnVictory(__class__.AnimID)
         pass
 
     def checkTransition(self):
         #wait until confirmation, then terminate
-        return StateDeinit.__name__
+        if(self.controller.AnimationDone[__class__.AnimID]==True):
+            return StateDeinit.__name__
+        pass
+
+class StatePlayerFlee(State):
+    AnimID = hash('OnFleeing')
+    def __init__(self,battleController):
+        super().__init__(__class__.__name__)
+        self.controller = battleController
+
+    def onEnter(self):
+        #self.battleData.postBattle(playerflee=True)
+        #show flee screen
+        self.controller.AnimationDone[__class__.AnimID]=False
+        self.controller.battleData.notifyOnFleeing(__class__.AnimID)
+        pass
+
+    def checkTransition(self):
+        #wait until confirmation, then terminate
+        if(self.controller.AnimationDone[__class__.AnimID]==True):
+            return StateDeinit.__name__
+        pass
 
 class StateDeinit(State):
     def __init__(self,battleController):
@@ -202,6 +267,7 @@ class StateDeinit(State):
 
     def onEnter(self):
         #trigger the termination of BattleMode
+        self.battleData.finishBattle = False
         pass
 
     def checkTransition(self):
@@ -221,13 +287,20 @@ class BattleData():
         self.finishTurn = False
         self.currCharacter = None
         self.turnOrder = []
+        self.finishBattle = False
         pass
 
     def nextTurn(self):
         self.currCharacter = ''
+        self.turnOrder=[]
+        self.turnOrderIdx = 0
         self.turn += 1
         self.newTurn = True
         self.finishTurn = False
+
+    def resetNextCharacter(self):
+        self.finishTurn = False
+        self.turnOrderIdx = 0
 
     def nextCharacter(self):
         """this will select the next charcter according turn order as the current character
@@ -238,8 +311,9 @@ class BattleData():
             for team in self.teams:                     #todo depends on agility aand surprise?
                 for char in team.chars:
                     self.turnOrder.append(char)
-        if(len(self.turnOrder)>0):
-            self.currCharacter = self.turnOrder.pop(0)
+        if(self.turnOrderIdx)<len(self.turnOrder):
+            self.currCharacter = self.turnOrder[self.turnOrderIdx]
+            self.turnOrderIdx+=1
         else:
             self.currCharacter = ''
             self.finishTurn = True
@@ -251,6 +325,49 @@ class BattleData():
             if(char!=None):
                 return char
         return None
+
+    def calculateSkillResult(self, char):
+        """calculates the effect of an skill without applying it
+        """
+        res = SkillResult()
+        if(char.isInhibited()):
+            return res
+        skill = char.getSkillForID(char.skillInNextTurn)
+        targets = char.skillTarget
+        if(skill != None and len(targets)>0):
+            res = skill.previewCast(targets)
+            
+        return res
+        pass
+
+    def applySkillResult(self, result):
+        """applys the previous calculated effect
+        """
+        if(result.success==True):
+            for effect in result.effects:
+                effect.on_apply()
+        pass
+
+    def getAllChars(self):
+        chars = []
+        for team in self.teams:
+            for char in team.chars:
+                chars.append(team.get_char(char))
+        return chars
+
+    def getTeamForCharacterName(self,name):
+        for team in self.teams:
+            char = team.get_char(name)
+            if(char!=None):
+                return team
+        return None
+
+    #def getEnemysForCharacterName(self,name):
+    #    for team in self.teams:
+    #        char = team.get_char(name)
+    #        if(char==None):
+    #            return team
+    #    return None
 
     def addObserver(self, observer):
         self.__observers.append(observer)
@@ -270,6 +387,22 @@ class BattleData():
     def notifyOnNextPlayerChar(self,ID):
         for observer in self.__observers:
             observer.OnNextPlayerChar(ID)
+
+    def notifyOnCombatAction(self,ID,ActionResult):
+        for observer in self.__observers:
+            observer.OnCombatAction(ID,ActionResult)
+
+    def notifyOnVictory(self,ID):
+        for observer in self.__observers:
+            observer.OnVictory(ID)
+
+    def notifyOnFleeing(self,ID):
+        for observer in self.__observers:
+            observer.OnFleeing(ID)
+
+    def notifyOnDefeat(self,ID):
+        for observer in self.__observers:
+            observer.OnDefeat(ID)
 
 class Arena():
     """defines the arena whee you are battling"""

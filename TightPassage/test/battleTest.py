@@ -13,16 +13,23 @@ game.reset()
 
 characterReserve=CharacterReserve(character_factory=default_character_factory)
 characterReserve.add_char("Heinz")
-characterReserve.get_char("Heinz").skills = [SkillAttack()]
+char = characterReserve.get_char("Heinz")
+char.addSkill([SkillAttack(),SkillFlee()])
+char.setFaction('Player')
 characterReserve.add_char("Gnoll")
+char = characterReserve.get_char("Gnoll")
+char.addSkill([SkillAttack()])
+char.setFaction('Enemy')
 
 partyA = Party(characterReserve)
 partyA.initial_state(2)
 partyA.add_char("Heinz")
+partyA.setFaction('Player')
 
 partyB = Party(characterReserve)
 partyB.initial_state(2)
 partyB.add_char("Gnoll")
+partyB.setFaction('Enemy')
 
 data = BattleData()
 data.teams = [partyA,partyB]

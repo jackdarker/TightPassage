@@ -1,16 +1,4 @@
 
-def targetFilterAlly(targets):
-    possibleTarget = []
-    for target in targets:
-        if(target.isPlayerAlly()):
-            possibleTarget.append(target)
-
-def targetFilterEnemy(targets):
-    possibleTarget = []
-    for target in targets:
-        if(not target.isPlayerAlly()):
-            possibleTarget.append(target)
-
 class Skill():
     """an action the character can do
     """
@@ -34,18 +22,24 @@ class Skill():
 
     def targetFilter(self):
         """returns a function to filter a list of possible targets for targets that this skill can cast on
-        myFilter(targets)->targets
+        myFilter(targets)->targets   teams is a array of party; targets is a list of character
         """
-        return targetFilterEnemy
+        return self.targetFilterEnemy
 
     def isValidPhase(self):
         """returns True if the skill can be used in tha actual game-phase (combatPhase,explorePhase)
         """
         return True
 
+    def isDisabled(self):
+        """returns True and text if the skill cannot be used because its temporary disabled (silenced mage, blinded)
+        the text should indicate why and how long it is disabled
+        """
+        return False,''
+
     def isValidTarget(self,targets):
         """returns True if the skill can be used on the target(s)"""
-        return (self.targetFilter(targets).sorted()== targets.sorted())
+        return (sorted(self.targetFilter()(targets))== sorted(targets))
 
     def getCost(self):
         """returns infomration about the cost to execute the skill"""
@@ -55,9 +49,34 @@ class Skill():
         """returns a description of the skill for view"""
         return self.name
 
+    def previewCast(self,targets):
+        result = SkillResult()
+        return result
+
     def cast(self,targets):
         """execute the skill on the targets"""
         pass
+
+    def targetFilterSelf(self,targets):
+        possibleTarget = []
+        for target in targets:
+            if(self.caster.name == target.name):
+                possibleTarget.append(target)
+        return possibleTarget
+
+    def targetFilterAlly(self,targets):
+        possibleTarget = []
+        for target in targets:
+            if(self.caster.faction == target.faction):
+                possibleTarget.append(target)
+        return possibleTarget
+
+    def targetFilterEnemy(self,targets):
+        possibleTarget = []
+        for target in targets:
+            if(self.caster.faction != target.faction):
+                possibleTarget.append(target)
+        return possibleTarget
 
 class SkillCombat(Skill):
     """a skill that can only be used in combat"""
@@ -117,12 +136,19 @@ class Effect():
         self.active = False
 
     def on_apply(self):
+        """called to add the effect to the character"""
+        self.owner.effects.append(self)  #todo some effects should not append multiple times?
         pass
 
     def on_remove(self):
+        if(self in self.owner.effects):
+            self.owner.effects.remove(self)
         pass
 
     def on_nextTurn(self):
+        self.duration-=1
+        if(duration<=0 and self.active):
+            self.on_remove()
         pass
 
     def on_combatEnd(self):
@@ -132,5 +158,13 @@ class Effect():
         pass
 
     def __str__(self):
-        return "%s - Turn(s) %s" % (self.name.replace("-", " ").title(),
-                                   self.duration)
+        if(self.max_duration<=1):
+            return "%s " % (self.name.replace("-", " ").title())
+        else:
+            return "%s - Turn(s) %s" % (self.name.replace("-", " ").title(),self.duration)
+
+class SkillResult():
+    def __init__(self):
+        self.success = False
+        self.effects = []
+        pass

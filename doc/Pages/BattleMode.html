@@ -1,0 +1,95 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Development Tools</title>
+</head>
+<body>
+    <h1>BattleMode</h1>
+<hr />
+    Object-Relationship for BattleMode. Trying to implement this as MVC
+    <div class="mermaid">
+        graph TB
+        BattleController-->|Modify|BattleData
+	BattleController-->|Read|BattleData
+        BattleScreen-->|Notify|BattleController
+	BattleData-->|Notify|BattleScreen
+	BattleScreen-->|Read|BattleData
+	BattleController-->|Notify|BattleScreen
+        end
+
+
+    </div>
+    <hr />
+    This is a diagram of the combat flow.
+    <div class="mermaid">
+        graph TB
+        ExploreStateMachine-->LoadBattleScene
+        subgraph BattleStateMachine
+        LoadBattleScene-->NextWave
+        NextWave-->|Done|BattleVictory
+        BattleVictory-->Return
+        BattleLoss-->Return
+        BattleRetreat-->Return
+        NextWave-->|NotDone|PreWave
+        NextWave-->|Flee|BattleRetreat
+        PreWave-->PreTurn
+        PreTurn-->PlayersTurn
+        PlayersTurn-->EnemysTurn
+        PlayersTurn-->|Flee|BattleRetreat
+        EnemysTurn-->PreTurn
+        PlayersTurn-->|Victory|Victory
+        PlayersTurn-->|Defeat|BattleLoss
+        EnemysTurn-->|Victory|Victory
+        EnemysTurn-->|Defeat|BattleLoss
+        Victory-->NextWave
+        end
+        EnterTurn-->CheckDefeat
+        Skip-->ExitTurn
+        subgraph CombatantTurn
+        CheckDefeat-->SelectAction
+        SelectAction-->ExecuteAction
+        ExecuteAction-->CheckDefeat
+        SelectAction-->|EndTurn|Skip
+        CheckDefeat-->|Me defeated|Skip
+        CheckDefeat-->|All targets defeated|Skip
+        end
+
+    </div>
+    <hr />
+    <h2>Battle</h2>
+	<p>TODO this is incorrect</p>
+    <p>A battle consists of several waves that are fought one after another.</p>
+    <p>If the player is defeated in a wave:</p>
+    <ul>
+        <li>the complete battle is lost</li>
+        <li>loss of all earned money and gear??</li>
+        <li>there might be further consequenses, f.e being kicked out from the tile</li>
+    </ul>
+    <p>After each wave:</p>
+    <ul>
+        <li>the player might decide to leave without malus.The the batttle is still marked as failed</li>
+        <li>health is not recoverd fully</li>
+    </ul>
+
+    <h2>Wave</h2>
+    <p>A wave is a setup of player and enemys.</p>
+    <ul>
+        <li>turn order is calculated by ??</li>
+        <li>in a hold up, all the enemys get the first turn</li>
+        <li>The player might decide to flee from combat. He will at least loose some money</li>
+        <li>The chance for fleeing depends on ??</li>
+        <li>the wave is lost when the player runs out of HP</li>
+    </ul>
+
+    <p>When its his turn, the player/enemy will do actions as long as he has AP for it.</p>
+    <ul>
+        <li>he might also finish the turn early.</li>
+        <li>unspend AP might be automatically be consumed by defensive action, f.e. blocking an attack with a shield</li>
+        <li>AP regenerates between turns. Regeneration rate depends on ??</li>
+    </ul>
+    <script src="../js/mermaid.min.js"></script>
+    <script>mermaid.initialize({ startOnLoad: true });</script>
+</body>
+</html>

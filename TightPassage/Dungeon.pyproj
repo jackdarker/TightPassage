@@ -77,6 +77,9 @@
     <Compile Include="src\Components\ResourceManager.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="src\Components\Stats.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="src\Components\TiledImporter.py">
       <SubType>Code</SubType>
     </Compile>

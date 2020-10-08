@@ -1,6 +1,7 @@
 import sys
 import pygame
 import pygame_menu
+from src.FSM import FSM,State
 import src.Const as Const
 
 class BattleScreen():
@@ -8,6 +9,7 @@ class BattleScreen():
 
     def __init__(self,screen,state,battleController):
         self.__observers = []
+        
         self.battleController = battleController
         self.battleData = battleController.battleData
         self.battleData.addObserver(self)   #recevie notification on modelchange
@@ -43,8 +45,6 @@ class BattleScreen():
     def _skillSelected(self):
         pass
     
-    
-
     #using observer to send data to the controller
     def addObserver(self, observer):
         self.__observers.append(observer)
@@ -62,6 +62,10 @@ class BattleScreenConsole(BattleScreen):
     """
     def __init__(self,screen,state,battleController):
         super().__init__(screen,state,battleController)
+        self.fsm = FSM(model=self,
+                       states=[self.StateBeforeInit(self),self.StateInit(self),
+                               self.StatePlayerSelectSkill(self),self.StatePlayerSelectTarget(self)],
+                       initialState=self.StateBeforeInit.__name__)
         self.delay = 0
         self.AnimID = ""
     
@@ -69,6 +73,7 @@ class BattleScreenConsole(BattleScreen):
         if(self.delay>0): 
             self.delay = self.delay -dt
             self.notifyAnimationDone(self.AnimID)
+        self.fsm.checkTransition() 
         pass
 
     #methods called by model observer
@@ -91,26 +96,133 @@ class BattleScreenConsole(BattleScreen):
         pass
 
     def OnNextPlayerChar(self,ID):
-        print("select move for "+self.battleData.currCharacter)
-        i=1
-        skills =[]
-        for skill in self.battleData.getCharacterByID(self.battleData.currCharacter).skills:
-            print(str(i)+': '+skill.name)
-            skills.append(skill.name)
-        skill= input("-->")
-        if(skill.isdigit()):
-            x = int(skill)
-            skill = skills[x-1]
-        print("select target for "+skill)
-
-        self.battleController.selectSkillForCharacter(self.battleData.currCharacter,skill)
-        self.delay=10
-        self.AnimID = ID 
+        self.delay=-10
+        self.AnimID = ID
+        self.fsm.forceState(self.StatePlayerSelectSkill.__name__)
         pass
 
-    def OnCombatAction(self,ID):
-        print("move for "+self.battleData.currCharacter)
+    def OnCombatAction(self,ID,actionResult):
+        for effect in actionResult.effects:
+            print(self.battleData.currCharacter +
+                  " causes " + effect.getDescription() +
+                  " on " + effect.owner.name)
         
         self.delay=100
         self.AnimID = ID 
+        pass
+
+    def OnVictory(self,ID):
+        print("Congrats. You defeated all opponents.")
+        self.delay=1000
+        self.AnimID = ID 
+        pass
+
+    def OnDefeat(self,ID):
+        print("You failed.")
+        self.delay=1000
+        self.AnimID = ID 
+        pass
+
+    def OnFleeing(self,ID):
+        print("You retreat hastily.")
+        self.delay=1000
+        self.AnimID = ID 
+        pass
+
+    class StateInit(State):
+        def __init__(self,battleScreen):
+            super().__init__(__class__.__name__)
+            self.battleScreen = battleScreen
+    
+        def onEnter(self):
+            pass
+
+        def checkTransition(self):
+            return None
+
+    class StateBeforeInit(State):
+        def __init__(self,battleScreen):
+            super().__init__(__class__.__name__)
+            self.battleScreen = battleScreen
+    
+        def onEnter(self):
+            pass
+
+        def checkTransition(self):
+            return BattleScreenConsole.StateInit.__name__
+
+    class StatePlayerSelectSkill(State):
+        """display which actor to use and let the player select a skill"""
+        def __init__(self,battleScreen):
+            super().__init__(__class__.__name__)
+            self.battleScreen = battleScreen
+            self.battleData = battleScreen.battleData
+    
+        def onEnter(self):
+            print("select move for "+self.battleData.currCharacter)
+            self.battleScreen.selectedSkill = None
+            self.battleScreen.selectedTarget =  None
+            i=1
+            skills =[]
+            for skill in self.battleData.getCharacterByID(self.battleData.currCharacter).skills:
+                print(str(i)+': '+skill.name)
+                skills.append(skill.name)
+                i+=1
+            skill= input("-->")
+            if(skill.isdigit()):
+                x = int(skill)
+                skill = skills[x-1]
+            self.battleScreen.selectedSkill = skill
+            pass
+
+        def checkTransition(self):
+            if(self.battleScreen.selectedSkill != None):
+                return BattleScreenConsole.StatePlayerSelectTarget.__name__
+            return None
+
+    class StatePlayerSelectTarget(State):
+        def __init__(self,battleScreen):
+            super().__init__(__class__.__name__)
+            self.battleScreen = battleScreen
+            self.battleData = battleScreen.battleData
+    
+        def onEnter(self):
+            print("select target for "+self.battleScreen.selectedSkill)
+            self.battleScreen.selectedTarget =  None
+            skill=self.battleData.getCharacterByID(self.battleData.currCharacter).getSkillForID(self.battleScreen.selectedSkill)
+            postargets = skill.targetFilter()(self.battleData.getAllChars())
+            i=1
+            targets =[]
+            for target in postargets:
+                print(str(i)+': '+target.name + 'HP=' + str(target.stats.HP)  )
+                targets.append(target)
+                i+=1
+            print('0: back')
+            target= input("-->")
+            if(target.isdigit()):
+                x = int(target)
+                if(x==0):
+                    self.battleScreen.selectedSkill =None #force return to prev state
+                else:
+                    x = int(target)
+                    target = targets[x-1]
+            self.battleScreen.selectedTarget=[target]
+            pass
+
+        def checkTransition(self):
+            if(self.battleScreen.selectedSkill ==None):
+                return BattleScreenConsole.StatePlayerSelectSkill.__name__
+            elif(self.battleScreen.selectedTarget != None):
+                self.battleScreen.battleController.selectSkillForCharacter(self.battleData.currCharacter,self.battleScreen.selectedSkill,self.battleScreen.selectedTarget)
+                self.battleScreen.notifyAnimationDone(self.battleScreen.AnimID)
+                return BattleScreenConsole.StateInit.__name__
+            return None
+
+class SkillRenderData():
+    """a data container to transfer data from controller to the view
+    contains a collection: damage dealt, applied effect, used skill
+    the view is responsible to display the information in a proper way, f.e. updating healthbars, skillanimation
+    """
+    def __init__(self,skillResult):
+        self.data = skillResult
         pass

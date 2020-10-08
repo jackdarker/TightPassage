@@ -4,6 +4,7 @@ and pools of characters that can be picked to join a group.
 """
 
 import pygame
+from src.Components.Stats import Stats
 
 def default_party_factory(reserve):
     return Party(reserve)
@@ -36,6 +37,7 @@ class Party(object):
         """
         self.reserve = reserve
         self.chars = []
+        self.faction = None
         self.leader = None
         self.avatar = None
         reserve.register_party(self)
@@ -62,6 +64,9 @@ class Party(object):
         if leader is not None:
             self.leader = leader
         self.custom_init()
+
+    def setFaction(self,Faction):
+        self.faction = Faction
 
     def add_char(self, name):
         """
@@ -199,7 +204,6 @@ class Party(object):
         if self.avatar is not None:
             self.avatar.reload_image()
         pass
-
 
 class CharacterReserve(object):
 
@@ -358,7 +362,6 @@ class CharacterReserve(object):
         for char in chars:
             self.add_char(char)
 
-
 class Character(object):
 
     """
@@ -390,15 +393,45 @@ class Character(object):
             ObjectImage with the character's sprites.
         """
         self.AI = AI
+        self.faction = None
         self.name = name
-        self.skills = []
+        self.stats = Stats()
+        self.skills = []        #list of skills
+        self.skillTarget = []   #list of characters
         self.skillInNextTurn = None
-        self.effects = []
+        self.effects = []       #list of active effects
         self.image_file = image_file
         if image_file:
             self.image = ObjectImage(self.image_file, index)
         else:
             self.image = None
+
+    def setFaction(self,Faction):
+        self.faction = Faction
+
+    def addSkill(self, skills):
+        for skill in skills:
+            skill.caster = self
+            self.skills.append(skill)
+
+    def getSkillForID(self,name):
+        for skill in self.skills:
+            if(skill.name==name):
+                return skill
+        return None
+
+    def damage(self,amount):
+        self.stats.HP-=amount
+        if(self.stats.HP<0): self.stats.HP=0
+
+    def isInhibited(self):
+        """dead,paralyzed,.."""
+        return self.stats.HP<=0
+
+    def on_nextTurn(self):
+        for effect in self.effects:
+            effect.on_nextTurn(self);
+        pass
 
     def __repr__(self):
         return self.name

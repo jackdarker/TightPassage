@@ -5,18 +5,27 @@ import pygame
 
 FPS = 60.0
 WINDOW_SIZE = (640, 640)
+CAPTION = "dungeon"
 BACKGROUND_COLOR = (40, 40, 40)
 
 #colors for debug draw
 BLACK =  (  0,   0,   0)
 WHITE =  (255, 255, 255)
-BLUE =   (  0,   0, 255)
-GREEN =  (  0, 255,   0)
-RED =    (255,   0,   0)
 PURPLE = (155,   0, 155)
+BRIGHT_RED = (255, 0, 0)
+RED = (155, 0, 0,)
+BRIGHT_GREEN = (0, 255, 0)
+GREEN = (0, 155, 0)
+BRIGHT_BLUE = (0, 0, 255)
+BLUE = (0, 0, 155)
+BRIGHT_YELLOW = (255, 255, 0)
+YELLOW = (155, 155, 0)
+BRIGHT_GRAY = (128, 128, 128)
+DARK_GRAY = (40, 40, 40)
+CYAN = (0, 255, 255)
 
 COLOR_KEY = (255, 0, 255) #transparency color of sprites without alpha
-CAPTION = "dungeon"
+
 
 #debug-tools
 DEBUG = True    #enables some stuff that should only be available in dev-mode
