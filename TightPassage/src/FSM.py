@@ -3,10 +3,11 @@ class State(object):
     """implements a state of the statemachine
     extend this and override methods or use the configurable callback on init 
     """
-    def __init__(self,name, on_enter=None, on_exit=None, transitions=[]):
+    def __init__(self,name, on_enter=None, on_exit=None, transitions=[],on_do=None):
         self.name =name
         self.on_enter = on_enter
         self.on_exit = on_exit
+        self.on_do = on_do
         self.transitions=transitions
         pass
 
@@ -16,6 +17,14 @@ class State(object):
         """
         if self.on_enter:
            self.on_enter(self)
+        pass
+
+    def onDo(self):
+        """called before checkTransition
+        override this or set function on init
+        """
+        if self.on_do:
+           self.on_do(self)
         pass
 
     def onExit(self):

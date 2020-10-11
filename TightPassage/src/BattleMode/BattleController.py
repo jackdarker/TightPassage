@@ -31,28 +31,6 @@ class BattleController():
         char.skillInNextTurn = skillname
         char.skillTarget = targets
 
-    def isTeamDefeated(self,faction, invers=False):
-        #is playerteam/other team defeated?
-        defeat = False
-        for team in self.battleData.teams:
-            if((team.faction != faction and invers==False) or
-               (team.faction == faction and invers==True)): break
-            defeat = True
-            for char in team.chars:
-                defeat = defeat and (team.get_char(char).stats.HP<=0)
-        return defeat
-
-    def isTeamFleeing(self,faction, invers=False):
-        #is playerteam/other team defeated?
-        for team in self.battleData.teams:
-            if((team.faction != faction and invers==False) or
-               (team.faction == faction and invers==True)): break
-            for char in team.chars:
-                for effect in team.get_char(char).effects:
-                    if( type(effect) == EffFlee):
-                        return True
-        return False
-
     #methods called by view via observer
     def OnAnimationDone(self,ID):
         self.AnimationDone[ID]=True
@@ -89,6 +67,7 @@ class StateCheckDefeat(State):
     def __init__(self,battleController):
         super().__init__(__class__.__name__)
         self.controller = battleController
+        self.battleData = battleController.battleData
 
     def onEnter(self):
         pass
@@ -96,11 +75,11 @@ class StateCheckDefeat(State):
     def checkTransition(self):
         #evaluate if team is defeated and switch to postBattleScene
         self.controller
-        if(self.controller.isTeamFleeing('Player')):
+        if(self.battleData.isTeamFleeing('Player')):
             return StatePlayerFlee.__name__
-        elif(self.controller.isTeamDefeated('Player')):
+        elif(self.battleData.isTeamDefeated('Player')):
             return StatePlayerLoss.__name__
-        elif(self.controller.isTeamDefeated('Player',invers=True)):
+        elif(self.battleData.isTeamDefeated('Player',invers=True)):
             return StatePlayerVictory.__name__
         else:   return StateNewTurn.__name__
 
@@ -135,11 +114,14 @@ class StateCombatantSelection(State):
     def onEnter(self):
         #notify about combatant change
         char = self.controller.battleData.getCharacterByID(self.controller.battleData.currCharacter)
+        #iterates also over inhibited chars ??
+        #if(char.isInhibited()):
+
         #if playercontrolled selectSkillAndTarget by View
         if(char.AI==None):
             self.controller.AnimationDone[__class__.AnimID]=False
             self.controller.battleData.notifyOnNextPlayerChar(__class__.AnimID)
-        else:#if AIcontrolled selectSkillAndTarget by AI
+        else:#todo if AIcontrolled selectSkillAndTarget by AI
             pass
         
         pass
@@ -169,7 +151,7 @@ class StateCombatantAction(State):
         #execute skill
         self.controller.AnimationDone[__class__.AnimID]=False
         char = self.controller.battleData.getCharacterByID(self.controller.battleData.currCharacter)
-        #maybe remove dead chars from combatants
+        #maybe remove dead chars from combatants??
         move = self.controller.battleData.calculateSkillResult(char)
         self.controller.battleData.applySkillResult(move)
         self.controller.battleData.notifyOnCombatAction(__class__.AnimID, move)
@@ -267,7 +249,7 @@ class StateDeinit(State):
 
     def onEnter(self):
         #trigger the termination of BattleMode
-        self.battleData.finishBattle = False
+        self.controller.battleData.battleDone = True
         pass
 
     def checkTransition(self):
@@ -287,7 +269,7 @@ class BattleData():
         self.finishTurn = False
         self.currCharacter = None
         self.turnOrder = []
-        self.finishBattle = False
+        self.battleDone = False
         pass
 
     def nextTurn(self):
@@ -306,11 +288,13 @@ class BattleData():
         """this will select the next charcter according turn order as the current character
         if turn order wasnt estimated yet, it will be calculated first
         """
+        #rebuild turnorder
         if(self.newTurn and self.turnOrder==[]):
             self.newTurn = False
             for team in self.teams:                     #todo depends on agility aand surprise?
                 for char in team.chars:
                     self.turnOrder.append(char)
+
         if(self.turnOrderIdx)<len(self.turnOrder):
             self.currCharacter = self.turnOrder[self.turnOrderIdx]
             self.turnOrderIdx+=1
@@ -354,6 +338,28 @@ class BattleData():
             for char in team.chars:
                 chars.append(team.get_char(char))
         return chars
+
+    def isTeamDefeated(self,faction, invers=False):
+        #is playerteam/other team defeated?
+        defeat = False
+        for team in self.teams:
+            if((team.faction != faction and invers==False) or
+               (team.faction == faction and invers==True)): continue
+            defeat = True
+            for char in team.chars:
+                defeat = defeat and (team.get_char(char).stats.HP<=0)
+        return defeat
+
+    def isTeamFleeing(self,faction, invers=False):
+        #is playerteam/other team defeated?
+        for team in self.teams:
+            if((team.faction != faction and invers==False) or
+               (team.faction == faction and invers==True)): continue
+            for char in team.chars:
+                for effect in team.get_char(char).effects:
+                    if( type(effect) == EffFlee):
+                        return True
+        return False
 
     def getTeamForCharacterName(self,name):
         for team in self.teams:

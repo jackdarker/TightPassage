@@ -406,6 +406,8 @@ class Character(object):
         else:
             self.image = None
 
+#todo add deepcopy(memo)
+
     def setFaction(self,Faction):
         self.faction = Faction
 
@@ -426,6 +428,10 @@ class Character(object):
 
     def isInhibited(self):
         """dead,paralyzed,.."""
+        return self.stats.HP<=0
+
+    def isDead(self):
+        """dead"""
         return self.stats.HP<=0
 
     def on_nextTurn(self):

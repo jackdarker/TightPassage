@@ -78,19 +78,24 @@ class BattleScreenConsole(BattleScreen):
 
     #methods called by model observer
     def OnInitBattle(self,ID):
-        print("Starting Battle")
-        
+        print("Starting Battle between")
+        first =True
         for team in self.battleData.teams:
+            if(first):
+                print('   and   ')
+                first=False
             for char in team.chars:
                 print(team.get_char(char).name)
-            print('   against   ')
-        
+            
         self.delay=1000
         self.AnimID = ID #sys._getframe().f_code.co_name
         pass
 
     def OnNewTurn(self,ID):
-        print("Starting Next Turn")        
+        print("Starting Next Turn")
+        chars = self.battleData.getAllChars()
+        for char in chars:
+            print(char.name+ ' has HP='+str(char.stats.HP))
         self.delay=1000
         self.AnimID = ID 
         pass
@@ -159,24 +164,33 @@ class BattleScreenConsole(BattleScreen):
             self.battleData = battleScreen.battleData
     
         def onEnter(self):
-            print("select move for "+self.battleData.currCharacter)
             self.battleScreen.selectedSkill = None
             self.battleScreen.selectedTarget =  None
-            i=1
-            skills =[]
-            for skill in self.battleData.getCharacterByID(self.battleData.currCharacter).skills:
-                print(str(i)+': '+skill.name)
-                skills.append(skill.name)
-                i+=1
-            skill= input("-->")
-            if(skill.isdigit()):
-                x = int(skill)
-                skill = skills[x-1]
-            self.battleScreen.selectedSkill = skill
+            self.forceSkip=False
+            char = self.battleData.getCharacterByID(self.battleData.currCharacter)
+            if(char.isInhibited()):
+                print(self.battleData.currCharacter +" cannot do anything")
+                self.forceSkip=True #skip skill and targetselection
+                self.battleScreen.delay=500
+            else:
+                print("select move for "+self.battleData.currCharacter)
+                i=1
+                skills =[]
+                for skill in char.skills:
+                    print(str(i)+': '+skill.name)
+                    skills.append(skill.name)
+                    i+=1
+                skill= input("-->")
+                if(skill.isdigit()):
+                    x = int(skill)
+                    skill = skills[x-1]
+                self.battleScreen.selectedSkill = skill
             pass
 
         def checkTransition(self):
-            if(self.battleScreen.selectedSkill != None):
+            if(self.forceSkip==True):
+                return BattleScreenConsole.StateInit.__name__
+            elif(self.battleScreen.selectedSkill != None):
                 return BattleScreenConsole.StatePlayerSelectTarget.__name__
             return None
 
@@ -194,7 +208,7 @@ class BattleScreenConsole(BattleScreen):
             i=1
             targets =[]
             for target in postargets:
-                print(str(i)+': '+target.name + 'HP=' + str(target.stats.HP)  )
+                print(str(i)+': '+target.name + ' HP=' + str(target.stats.HP)  )
                 targets.append(target)
                 i+=1
             print('0: back')

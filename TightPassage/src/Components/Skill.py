@@ -1,3 +1,8 @@
+#class TargetFilter():
+#    def __init__(self,name):
+#        pass
+#    def targetFilter(self,targets):
+#        return []
 
 class Skill():
     """an action the character can do
@@ -57,6 +62,7 @@ class Skill():
         """execute the skill on the targets"""
         pass
 
+    #some predefined filter; chain them to narrow down the targets
     def targetFilterSelf(self,targets):
         possibleTarget = []
         for target in targets:
@@ -78,12 +84,34 @@ class Skill():
                 possibleTarget.append(target)
         return possibleTarget
 
+    def targetFilterFighting(self,targets):
+        """chars that are not inhibited"""
+        possibleTarget = []
+        for target in targets:
+            if(not target.isInhibited()):
+                possibleTarget.append(target)
+        return possibleTarget
+
+    def targetFilterDead(self,targets):
+        """chars that are dead"""
+        possibleTarget = []
+        for target in targets:
+            if(not target.isDead()):
+                possibleTarget.append(target)
+        return possibleTarget
+
 class SkillCombat(Skill):
     """a skill that can only be used in combat"""
     def isValidPhase(self):
         """returns True if the skill can be used in tha actual game-phase (combatPhase,explorePhase)
         """
         return True #todo
+
+    def targetFilter(self):
+        """returns a function to filter a list of possible targets for targets that this skill can cast on
+        myFilter(targets)->targets   teams is a array of party; targets is a list of character
+        """
+        return self.targetFilterEnemy
 
 class Effect():
     """ Effects are actions that trigger after a certain action is made

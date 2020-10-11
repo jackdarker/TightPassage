@@ -13,8 +13,20 @@ class EffDamage(Effect):
 
     def on_apply(self):
         self.owner.damage(self.dmg)
-        self.remove()
         pass
+
+class EffBleed(Effect):
+    def __init__(self,caster,owner,duration,dmg, tick=None):
+        super().__init__("Bleeding",caster,owner,duration,tick)
+        self.dmg =dmg
+
+    def getDescription(self):
+        return ' %s bleeding ' % (self.dmg)
+
+    def on_nextTurn(self):
+        super().on_nextTurn()
+        if(self.active):
+            self.owner.damage(self.dmg)
 
 class EffMiss(Effect):
     """placeholder effect if the calculation indicates that the skill misses
@@ -39,9 +51,9 @@ class EffFlee(Effect):
 class SkillAttack(SkillCombat):
     """execute simple attack with active weapon
     """
-    def __init__(self):
-        super().__init__("Attack")
-        pass
+    def __init__(self,name="Attack"):
+        super().__init__(name)
+        self.filter = self.filterLivingEnemys
 
     def previewCast(self,targets):
         result = SkillResult()
@@ -49,7 +61,8 @@ class SkillAttack(SkillCombat):
         if(self.isValidTarget(targets)):
             result.success = True
             for target in targets:
-                result.effects.append(self.calculateDamage(self.caster,target))
+                result.effects.extend(
+                    self.calculateDamage(self.caster,target))
         return result
 
     def calculateDamage(self, caster,target):
@@ -58,9 +71,52 @@ class SkillAttack(SkillCombat):
         defs = target.stats.Def
         x = atts-defs
         if(x>0):
-            return EffDamage(caster,target,x)
+            return [EffDamage(caster,target,x)]
         else:
-            return EffMiss(caster,target,'missed attack')
+            return [EffMiss(caster,target,'missed attack')]
+        pass
+
+    def targetFilter(self):
+        return self.filter
+
+    def filterLivingEnemys(self,targets):
+        return self.targetFilterFighting(
+            self.targetFilterEnemy(targets))
+
+class SkillSlashAttack(SkillAttack):
+    """execute attack with active weapon that can cause bleed
+    """
+    def __init__(self):
+        super().__init__("Slash")
+        pass
+
+    def calculateDamage(self, caster,target):
+        atts = caster.stats.Att
+        atts = atts + random.randint(1, 10) - 5
+        defs = target.stats.Def
+        x = atts-defs
+        if(x>0):
+            return [EffDamage(caster,target,x),EffBleed(caster,target,2,x)]
+        else:
+            return [EffMiss(caster,target,'missed attack')]
+        pass
+
+class SkillSmokeBomb(SkillAttack):
+    """execute attack with active weapon that can cause bleed
+    """
+    def __init__(self):
+        super().__init__("Slash")
+        pass
+
+    def calculateDamage(self, caster,target):
+        atts = caster.stats.Att
+        atts = atts + random.randint(1, 10) - 5
+        defs = target.stats.Def
+        x = atts-defs
+        if(x>0):
+            return [EffDamage(caster,target,x),EffBleed(caster,target,2,x)]
+        else:
+            return [EffMiss(caster,target,'missed attack')]
         pass
 
 class SkillFlee(SkillCombat):

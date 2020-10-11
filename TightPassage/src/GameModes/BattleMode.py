@@ -16,7 +16,7 @@ class BattleMode(GameMode.GameMode):
         self.menu_screen.set_alpha(100) #why does fill with RGB+alpha not work?
         self.menu = None
         self.battleCtrl = BattleController(state,battleData)
-        self.view = BattleScreen(screen,state,battleData)
+        self.view = BattleScreen(screen,state,self.battleCtrl)
 
     def processInput(self):
         events = pygame.event.get()
