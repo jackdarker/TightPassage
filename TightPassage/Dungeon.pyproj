@@ -5,7 +5,7 @@
     <ProjectGuid>084ed0e8-07a2-41e4-8921-b73a5154c88a</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>test\battleTest.py</StartupFile>
+    <StartupFile>main.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -75,6 +75,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\Components\ResourceManager.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\Components\StatEngine.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\Components\Stats.py">
@@ -189,16 +192,12 @@
     <Compile Include="src\Vector.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="test\battleTest.py">
-      <SubType>Code</SubType>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="Global|PythonCore|3.6" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="assets\" />
-    <Folder Include="test\" />
     <Folder Include="scrap\" />
     <Folder Include="src\" />
     <Folder Include="src\Layers\" />

@@ -1,5 +1,18 @@
 import pygame
 
+
+
+def is_numeric(s):
+    """trys to parse the string as int or float"""
+    try:
+        x = int(s)
+    except:
+        try:
+            x = float(s)
+        except:
+            x = None
+    return x
+
 def get_images(sheet, frame_indices, size):
     """Get desired images from a sprite sheet image."""
     frames = []

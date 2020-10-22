@@ -8,26 +8,33 @@ from src.BattleMode.BattleScreen import BattleScreen
 class BattleMode(GameMode.GameMode):
     """turnbased battlescreen
     """
-    def __init__(self,screen,state,battleData):
+    def __init__(self,state,battleData):
         super().__init__(state)
         
-        self.menu_screen = screen.copy()
-        self.menu_screen.fill((0, 0, 0, 200))
-        self.menu_screen.set_alpha(100) #why does fill with RGB+alpha not work?
-        self.menu = None
+        #self.menu_screen = screen.copy()
+        #self.menu_screen.fill((0, 0, 0, 200))
+        #self.menu_screen.set_alpha(100) #why does fill with RGB+alpha not work?
+        #self.menu = None
         self.battleCtrl = BattleController(state,battleData)
-        self.view = BattleScreen(screen,state,self.battleCtrl)
+        self.view = BattleScreen(state,self.battleCtrl)
+
+        state.addObserver(self)
+        self.state.inGame = True
 
     def processInput(self):
         events = pygame.event.get()
         self.view.processInput(events)
 
     def update(self,dt):
-        self.view.update(dt)
         self.battleCtrl.update(dt)
+        self.view.update(dt)
+        Done = self.battleCtrl.battleData.battleDone
         pass
         
     def render(self, window):
         self.view.render(window)
+
+    def drawdebug(self,window):
+        pass
 
 

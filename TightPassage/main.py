@@ -5,10 +5,13 @@ import random
 import src.Const as Const
 import src.GameModeObserver as GameModeObserver
 import src.GameModes.PlayMode as PlayMode
+import src.GameModes.BattleMode as BattleMode
 import src.GameModes.MessageMode as MessageMode
 import src.GameModes.MenuMode as MenuMode
 import src.GameModes.MovieMode as MovieMode
 import src.GameState as GameState
+
+import testGame.battleTest as battleTest #todo remove this
 
 class App(GameModeObserver.GameModeObserver):
     """main-application containing the main loop
@@ -92,6 +95,17 @@ class App(GameModeObserver.GameModeObserver):
         self.state.reset()
         self.state.mazeGenerator= MazeGenerator
         self.playmode = PlayMode.PlayMode(self.state)
+        self.playmode.addObserver(self)
+        pass
+
+    def newBattleRequested(self,Battle):
+        """starts a battle"""
+        if(self.playmode!= None):
+            self.playmode.removeObserver(self)
+            self.playmode = None
+        self.state.reset()
+        self.state.battleData = battleTest.battleTest()
+        self.playmode = BattleMode.BattleMode(self.state,self.state.battleData)
         self.playmode.addObserver(self)
         pass
 

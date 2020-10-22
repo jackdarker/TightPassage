@@ -4,10 +4,10 @@ and pools of characters that can be picked to join a group.
 """
 
 import pygame
-from src.Components.Stats import Stats
+from src.Components.StatEngine import StatEngine,BaseStat
+from src.Components.Stats import *
+from src.Components.ComponentGraphics import *
 
-def default_party_factory(reserve):
-    return Party(reserve)
 
 
 class Party(object):
@@ -211,6 +211,12 @@ class CharacterReserve(object):
     A CharacterReserve is a container for characters that can be used
     in Parties.
     """
+    def default_party_factory(reserve):
+        return Party(reserve)
+
+    def default_character_factory(name):
+        char = Character(name)
+        return char
 
     def __init__(self, character_factory,
                  party_factory=default_party_factory):
@@ -374,7 +380,7 @@ class Character(object):
     from the CharacterReserve.
     """
 
-    def __init__(self, name, image_file=None, index=0,AI = None):
+    def __init__(self, name, AI = None):
         """
         *Constructor.*
 
@@ -395,18 +401,101 @@ class Character(object):
         self.AI = AI
         self.faction = None
         self.name = name
+        self.category = 'Stats' #category
+        self._public_data = None
+        self._private_data = StatEngine(self.name + ":" + self.category)
+        self._private_attributes = set()
+
         self.stats = Stats()
         self.skills = []        #list of skills
         self.skillTarget = []   #list of characters
         self.skillInNextTurn = None
         self.effects = []       #list of active effects
-        self.image_file = image_file
-        if image_file:
-            self.image = ObjectImage(self.image_file, index)
-        else:
-            self.image = None
+        self.cGraphic = None
 
 #todo add deepcopy(memo)
+    @property
+    def private_data(self):
+        return self._private_data
+
+    @property
+    def public_data(self):
+        """public data is used to share stats between different objects (they use the same statengine)
+        """
+        return self._public_data
+
+    @public_data.setter
+    def public_data(self, new_stat_engine : StatEngine):
+        self._public_data = new_stat_engine
+
+    def get_public_stat_name(self, stat_name : str):
+        return self.category + RPGObject.DELIMITER + self.name + RPGObject.DELIMITER + stat_name
+
+
+    def get_stat(self, stat_name : str, global_stat : bool = False):
+
+        logging.info("%s.get_stat():%s global=%r", __class__, stat_name, global_stat)
+        stat = None
+        if global_stat is True:
+            if self._public_data is None:
+                raise Exception("%s.get_stat(): Tried to get a global stat from %s which has no public data." % (__class__, self.name))
+            stat = self._public_data.get_stat(stat_name)
+            logging.info("%s.get_stat():getting global data %s.", __class__, stat_name)
+        elif self._public_data is None: #stat_name in self._private_attributes or 
+            stat = self._private_data.get_stat(stat_name)
+            logging.info("%s.get_stat():getting private data %s.", __class__, stat_name)
+        else:
+            stat_name = self.category + RPGObject.DELIMITER + self.name + RPGObject.DELIMITER + stat_name
+            stat = self._public_data.get_stat(stat_name)
+            logging.info("%s.get_stat():getting public data %s.", __class__, stat_name)
+
+        return stat
+
+    def add_stat(self, new_stat : BaseStat, global_stat : bool = False):
+
+        logging.info("%s.add_stat():%s global=%r", __class__, new_stat.name, global_stat)
+        if global_stat is True:
+            if self._public_data is None:
+                raise Exception("%s.add_stat(): Tried to add a global stat from %s which has no public data." % (__class__, self.name))
+            self._public_data.add_stat(new_stat)
+        elif  self._public_data is None: #new_stat.name in self._private_attributes or
+            self._private_data.add_stat(new_stat)
+        else:
+            new_stat.name = self.category + RPGObject.DELIMITER + self.name + RPGObject.DELIMITER + new_stat.name
+            self._public_data.add_stat(new_stat)
+
+    def update_stat(self, stat_name : str, new_value : float, global_stat : bool = False):
+
+        logging.info("%s.update_stat():%s global=%r", __class__, stat_name, global_stat)
+        stat = self.get_stat(stat_name, global_stat)
+        if stat is None:
+            self.add_stat(CoreStat(stat_name, "AUTO", new_value), global_stat)
+        else:
+            stat.value = new_value
+
+    def increment_stat(self, stat_name : str, increment : float, global_stat : bool = False):
+
+        logging.info("%s.increment_stat():%s global=%r", __class__, stat_name, global_stat)
+
+        stat = self.get_stat(stat_name, global_stat)
+        if stat is not None:
+            stat.value += increment
+        pass
+
+    def load_stats(self, stat_list : list, overwrite : bool = True):
+        """ Load in stats from a provided list
+        Default is to overwrite what is there already with option to increment
+        """
+        if stat_list is None:
+            return
+
+        for stat in stat_list:
+            # If we are overwriting or the stat does not exist then add the stat
+            if overwrite is True or self.get_stat(stat.name) is None:
+                self.add_stat(stat)
+            # Else increment the existing stat
+            else:
+                self.increment_stat(stat.name, stat.value)
 
     def setFaction(self,Faction):
         self.faction = Faction

@@ -30,6 +30,8 @@ class GameState():
         self.mazeGenerator = None
         self.mazeNodes = []
         self.currentMazeNode = None
+        #battlevars
+        self.battleData = None
 
     @property
     def worldWidth(self):

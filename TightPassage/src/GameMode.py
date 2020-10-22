@@ -9,7 +9,9 @@ class GameMode():
     def removeObserver(self, observer):
         if(self.__observers.count(observer)):
             self.__observers.remove(observer)
-
+    def notifyNewBattleRequested(self,Battle):
+        for observer in self.__observers:
+            observer.newBattleRequested(Battle)
     def notifyNewGameRequested(self,MazeGenerator="MazeGenerator"):
         for observer in self.__observers:
             observer.newGameRequested(MazeGenerator)

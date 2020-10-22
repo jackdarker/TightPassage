@@ -20,6 +20,8 @@ class MenuMode(GameMode.GameMode):
         menu.add_button('Play', self.new_game)
         if(Const.DEBUG==True):
             menu.add_button('Play Testmaze', self.test_game)
+        if(Const.DEBUG==True):
+            menu.add_button('Play Testbattle', self.test_battle)
         menu.add_button('Quit', self.notifyQuitRequested)
         self.main_menu = menu
         #pausemenu
@@ -59,6 +61,11 @@ class MenuMode(GameMode.GameMode):
         self.menu.disable()
         self.menu.reset(1)
         self.notifyNewGameRequested(MazeGenerator="TestMazeGenerator")
+
+    def test_battle(self):
+        self.menu.disable()
+        self.menu.reset(1)
+        self.notifyNewBattleRequested(Battle="Test")
 
     def show_MainMenu(self):
         if(self.state.inGame):
