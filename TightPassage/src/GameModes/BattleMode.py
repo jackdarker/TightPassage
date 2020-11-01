@@ -17,12 +17,16 @@ class BattleMode(GameMode.GameMode):
         #self.menu = None
         self.battleCtrl = BattleController(state,battleData)
         self.view = BattleScreen(state,self.battleCtrl)
-
+        self.view.addObserver(self.battleCtrl)
         state.addObserver(self)
         self.state.inGame = True
 
     def processInput(self):
         events = pygame.event.get()
+        for event in events:
+            if event.type == pygame.QUIT:
+                self.notifyQuitRequested()
+                break
         self.view.processInput(events)
 
     def update(self,dt):

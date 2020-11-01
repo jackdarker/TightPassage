@@ -1,13 +1,54 @@
 import sys
 import pygame
-import pygame_menu
-from src.FSM import FSM,State
+import time
+import random
+from pygame.locals import *
 import src.Const as Const
+#import pygame_menu
+from src.FSM import FSM,State
+from src.UI.Controls import *
+from src.UI.pgu.pgu import gui
 
 class BattleScreen():
     """implements the view for a battle"""
 
     @staticmethod
+    def renderTextCenteredAt(text, font, colour, x, y, screen, allowed_width):
+        # first, split the text into words
+        words = text.split()
+
+        # now, construct lines out of these words
+        lines = []
+        while len(words) > 0:
+            # get as many words as will fit within allowed_width
+            line_words = []
+            while len(words) > 0:
+                line_words.append(words.pop(0))
+                fw, fh = font.size(' '.join(line_words + words[:1]))
+                if fw > allowed_width:
+                    break
+
+            # add a line consisting of those words
+            line = ' '.join(line_words)
+            lines.append(line)
+
+        # now we've split our text into lines that fit into the width, actually
+        # render them
+
+        # we'll render each line below the last, so we need to keep track of
+        # the culmative height of the lines we've rendered so far
+        y_offset = 0
+        for line in lines:
+            fw, fh = font.size(line)
+
+            # (tx, ty) is the top-left of the font surface
+            tx = x - fw / 2
+            ty = y + y_offset
+
+            font_surface = font.render(line, True, colour)
+            screen.blit(font_surface, (tx, ty))
+
+            y_offset += fh
     def wrap_words_to_fit(text, scale, width, x_kerning=0):
         split_on_newlines = text.split("\n")
         if len(split_on_newlines) > 1:
@@ -51,43 +92,141 @@ class BattleScreen():
         self.battleData = battleController.battleData
         self.battleData.addObserver(self)   #recevie notification on modelchange
         
-        font = pygame_menu.font.FONT_OPEN_SANS
-        my_theme = pygame_menu.themes.THEME_SOLARIZED.copy()
-        my_theme.widget_font=font
-        menu = pygame_menu.Menu(500, 400, 'Battle',theme=my_theme)
-        menu.enabled = False
+        self._setupHud()
+        
+
         self.font = pygame.font.Font(pygame.font.get_default_font(),36)
+
         self.message = ""
-        self.menu = menu
         self.delay = 0
         self.AnimID = ""
         self.fsm = FSM(model=self,
                                states=[self.StateBeforeInit(self),self.StateInit(self),
                                        self.StatePlayerSelectSkill(self),self.StatePlayerSelectTarget(self)],
                                initialState=self.StateBeforeInit.__name__)
-
     
+    def _setupHud(self):
+        self.form = gui.Form()
+        themetouse = "default" #Const.resource_path("assets/pgu_themes/yellow")
+        self.app = gui.App(theme=gui.Theme(themetouse))
+        #the container for the widhgets
+        c = gui.Table(align=-1,valign=1)
+        tabsheetHeight =0   #240
+        #grid with buttons
+        tbSkills = gui.Table()
+        tbSkills.style.width = Const.WINDOW_SIZE[0]-20
+        tbSkills.style.height = tabsheetHeight
+        #tbSkills.tr()
+        #tbSkills.td(gui.Label("Skills",color=Const.YELLOW),colspan=2)
+
+        tbSkills.tr()
+        bt = IconButton("Clickdfsdgffdgdgf 1 Me!")
+        #bt.connect(gui.KEYDOWN, resizeMe, bt)
+        tbSkills.td(bt,align=-1)
+        tbSkills.tr()
+        bt = IconButton("Click  2 Me!")
+        #bt.connect(gui.CLICK, resizeMe, bt)
+        tbSkills.td(bt,align=-1)
+        tbSkills.tr()
+        bt = IconButton("Click      3 Me!")
+        #bt.connect(gui.CLICK, resizeMe,bt)
+        tbSkills.td(bt,align=-1)
+        self.tbSkills =tbSkills
+
+        #another grid with buttons
+        tbItems = gui.Table()
+        tbItems.style.width = Const.WINDOW_SIZE[0]-20
+        tbItems.style.height = tabsheetHeight
+        for i in range(0,5):
+            tbItems.tr()
+            for i in range(0,3):
+                bt = IconButton("---")
+                bt.disabled=True
+                #bt.connect(gui.KEYDOWN, resizeMe, bt)
+                tbItems.td(bt,align=-1)
+        self.tbItems =tbItems
+        if(True):
+            tablabels = Tabsheet(tabContent = {'Skills': self.tbSkills,'Items':self.tbItems})
+        else:
+            #creates a tab; buttons are used to switch tabs
+            self.tabs = gui.Group()
+            self.tabs.connect(gui.CHANGE,tab)
+            tablabels = gui.Table()
+            tablabels.tr()
+            #when the toolbutton is pressed it will call gui.CHANGE->tab() and this will switchout the boxwidget with c,t or d
+            b = gui.Tool(self.tabs,gui.Label("Skills"),self.tbSkills)    
+            tablabels.td(b)
+            tablabels.tr()
+            b = gui.Tool(self.tabs,gui.Label("Items"),self.tbItems)
+            tablabels.td(b)
+            tablabels.tr()
+            b = gui.Tool(self.tabs,gui.Label("Magic"),self.tbSkills)
+            tablabels.td(b)
+            #the following widget will be switched out when pressing on the tablabels
+            #tablabels.tr()
+            spacer = gui.Spacer(Const.WINDOW_SIZE[0]-20,240)
+            self.box = gui.ScrollArea(spacer,height=spacer.rect[1])
+            tablabels.td(self.box,row=0,col=1,style={'border':1},rowspan=3)
+            tablabels.tr()
+
+        self.Log = Textlog(width=Const.WINDOW_SIZE[0],height=300)
+        c.tr()
+        c.add(self.Log)#,20,0)
+        c.tr()
+        c.add(tablabels)#,0,200)
+
+        self.app.init(c)
+        pass
+
+    def scrap_pgutest():
+        #font = pygame_menu.font.FONT_OPEN_SANS
+        #my_theme = pygame_menu.themes.THEME_SOLARIZED.copy()
+        #my_theme.widget_font=font
+        #menu = pygame_menu.Menu(300, 400, 'Battle',theme=my_theme,columns=2,rows=4)
+        #menu.enable()
+        #id = 0
+        #id = menu.add_button('Continue', self.setTitle,id).get_id()
+        #id = menu.add_button('Continue2', self.setTitle,id).get_id()
+        #id = menu.add_button('Continue3', self.setTitle,id).get_id()
+        #id = menu.add_button('Continue4', self.setTitle,id).get_id()
+        #id = menu.add_button('Continue5', self.setTitle,id).get_id()
+        #id = menu.add_button('Continue6', self.setTitle,id).get_id()#
+        #self.menu = menu
+        #def setTitle(self,id):
+        #   self.menu.get_widget(id).set_title('sdf')
+        #pass
+        #tbSkills.resize()
+        #tbSkills.repaint()
+        #tbSkills.add("item ",value=0)
+        #tbSkills.add("item2 ",value=1)
+        #tbSkills.add("item3 ",value=2)
+        #tbSkills.add("item2 ",value=1)
+        #tbSkills.add("item3 ",value=2)
+        #tbSkills.add("item2 ",value=1)
+        #tbSkills.add("item3 ",value=2)
+        pass
 
     #methods called by model observer
     def OnInitBattle(self,ID):
         self.message = ("Starting Battle between")
         first =True
         for team in self.battleData.teams:
-            if(first):
+            if(not first):
                 self.message +=('   and   ')
-                first=False
+            first=False
             for char in team.chars:
-                self.message +=(team.get_char(char).name)
-        self.message = __class__.wrap_words_to_fit(self.message,1.0,300)
+                self.message +=(team.get_char(char).name+(', '))
+        self.message = self.message #__class__.wrap_words_to_fit(self.message,1.0,300)
+        self.Log.set_text(self.message)
         self.delay=1000
         self.AnimID = ID #sys._getframe().f_code.co_name
         pass
 
     def OnNewTurn(self,ID):
-        print("Starting Next Turn")
+        self.Log.set_text("Starting Next Turn")
         chars = self.battleData.getAllChars()
         for char in chars:
-            print(char.name+ ' has HP='+str(char.stats.HP))
+            self.Log.set_text(char.name+ ' has HP='+str(char.stats.HP))
         self.delay=1000
         self.AnimID = ID 
         pass
@@ -100,7 +239,7 @@ class BattleScreen():
 
     def OnCombatAction(self,ID,actionResult):
         for effect in actionResult.effects:
-            print(self.battleData.currCharacter +
+            self.Log.set_text(self.battleData.currCharacter +
                   " causes " + effect.getDescription() +
                   " on " + effect.owner.name)
         
@@ -109,19 +248,19 @@ class BattleScreen():
         pass
 
     def OnVictory(self,ID):
-        print("Congrats. You defeated all opponents.")
+        self.Log.set_text("Congrats. You defeated all opponents.")
         self.delay=1000
         self.AnimID = ID 
         pass
 
     def OnDefeat(self,ID):
-        print("You failed.")
+        self.Log.set_text("You failed.")
         self.delay=1000
         self.AnimID = ID 
         pass
 
     def OnFleeing(self,ID):
-        print("You retreat hastily.")
+        self.Log.set_text("You retreat hastily.")
         self.delay=1000
         self.AnimID = ID 
         pass
@@ -161,11 +300,12 @@ class BattleScreen():
             self.forceSkip=False
             char = self.battleData.getCharacterByID(self.battleData.currCharacter)
             if(char.isInhibited()):
-                print(self.battleData.currCharacter +" cannot do anything")
+                self.battleScreen.Log.set_text(self.battleData.currCharacter +" cannot do anything")
                 self.forceSkip=True #skip skill and targetselection
                 self.battleScreen.delay=500
             else:
-                print("select move for "+self.battleData.currCharacter)
+                self.battleScreen.Log.set_text("select move for "+self.battleData.currCharacter)
+                return
                 i=1
                 skills =[]
                 for skill in char.skills:
@@ -193,7 +333,7 @@ class BattleScreen():
             self.battleData = battleScreen.battleData
     
         def onEnter(self):
-            print("select target for "+self.battleScreen.selectedSkill)
+            self.battleScreen.Log.set_text("select target for "+self.battleScreen.selectedSkill)
             self.battleScreen.selectedTarget =  None
             skill=self.battleData.getCharacterByID(self.battleData.currCharacter).getSkillForID(self.battleScreen.selectedSkill)
             postargets = skill.targetFilter()(self.battleData.getAllChars())
@@ -203,7 +343,7 @@ class BattleScreen():
                 print(str(i)+': '+target.name + ' HP=' + str(target.stats.HP)  )
                 targets.append(target)
                 i+=1
-            print('0: back')
+            self.battleScreen.Log.set_text('0: back')
             target= input("-->")
             if(target.isdigit()):
                 x = int(target)
@@ -225,7 +365,11 @@ class BattleScreen():
             return None
 
     def processInput(self,events):
-        self.menu.update(events)
+        #if(self.menu.is_enabled()):
+        #    self.menu.update(events)
+        #else:
+        for e in events:   #pgu gui update
+            self.app.event(e)
 
     def update(self,dt):
         if(self.delay>0): 
@@ -235,27 +379,28 @@ class BattleScreen():
         pass
         
     def render(self, window):
-        if(self.message != ''):
-            surface = self.font.render(self.message, True, (200, 0, 0))
-            x = (window.get_width() - surface.get_width()) // 2
-            y = (window.get_height() - surface.get_height()) // 2
-            window.blit(surface, (x, y))
-        if(self.menu.is_enabled()):
-            self.menu_screen = window.copy()
-            self.menu_screen.fill((0, 0, 0, 200))
-            self.menu_screen.set_alpha(100) #why does fill with RGB+alpha not work?
-        
+        #fill with black
+        self.screen = window.copy()
+        self.screen.fill((0, 0, 0, 200))
+        self.screen.set_alpha(100) #why does fill with RGB+alpha not work?
         #render background
+        window.blit(self.screen,(0,0))
         #window.blit(self.battleData.arena.bgImage)
+
+        #if(self.message != ''):
+        x = (window.get_width()) // 2
+        y = (window.get_height()) // 2
+        __class__.renderTextCenteredAt(self.message, self.font, Const.WHITE, x, y, window, 200)
+
         #render teams
 
         #render menu
-        if (self.menu.is_enabled()):
-            window.blit(self.menu_screen,(0,0))
-            self.menu.draw(window)
+        #if (self.menu.is_enabled()):
+        #    self.menu.draw(window)
+        self.app.paint(window) #pgu gui update
 
     def showSkillMenu(self):
-        menu.add_button('Attack', self._skillSelected)
+        self.menu.add_button('Attack', self._skillSelected)
 
     def _skillSelected(self):
         pass
