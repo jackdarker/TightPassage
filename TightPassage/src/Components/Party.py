@@ -380,7 +380,7 @@ class Character(object):
     from the CharacterReserve.
     """
 
-    def __init__(self, name, AI = None):
+    def __init__(self, name,public_data=None, AI = None):
         """
         *Constructor.*
 
@@ -402,18 +402,31 @@ class Character(object):
         self.faction = None
         self.name = name
         self.category = 'Stats' #category
-        self._public_data = None
-        self._private_data = StatEngine(self.name + ":" + self.category)
+        self._public_data = public_data
+        self._private_data = StatEngine("")#self.name + ":" + self.category)
         self._private_attributes = set()
 
-        self.stats = Stats()
+        #self.stats = Stats()
         self.skills = []        #list of skills
         self.skillTarget = []   #list of characters
         self.skillInNextTurn = None
         self.effects = []       #list of active effects
         self.cGraphic = None
+        for name in Stats.CORE_STAT_NAMES:
+            stat = CoreStat(name,self.category,10,owner=self)
+            self.add_stat(stat)
+        
+        self.add_stat(MaxHP(self))
+        self.add_stat(HP(self))
+        #todo create derived stat
+        self.add_stat(CoreStat(Stats.sAttack,self.category,3,owner=self))
+        self.add_stat(CoreStat(Stats.sDefense,self.category,2,owner=self))
+        self.add_stat(CoreStat(Stats.sDamage,self.category,0,owner=self))
+        
+        self.get_stat(Stats.sConstitution).set_value(10)
 
-#todo add deepcopy(memo)
+
+    #todo add deepcopy(memo)
     @property
     def private_data(self):
         return self._private_data
@@ -429,8 +442,18 @@ class Character(object):
         self._public_data = new_stat_engine
 
     def get_public_stat_name(self, stat_name : str):
-        return self.category + RPGObject.DELIMITER + self.name + RPGObject.DELIMITER + stat_name
+        return self.category + StatEngine.DELIMITER + self.name + StatEngine.DELIMITER + stat_name
 
+    def set_portrait(self,image):
+        """set the bust for dialogs. 
+        image is a filename or a sprite"""
+        if(type(image) is str):
+            self.portrait = pygame.image.load(image)
+        else:
+            self.portrait = image
+
+    def get_portrait(self):
+        return self.portrait
 
     def get_stat(self, stat_name : str, global_stat : bool = False):
 
@@ -441,11 +464,11 @@ class Character(object):
                 raise Exception("%s.get_stat(): Tried to get a global stat from %s which has no public data." % (__class__, self.name))
             stat = self._public_data.get_stat(stat_name)
             logging.info("%s.get_stat():getting global data %s.", __class__, stat_name)
-        elif self._public_data is None: #stat_name in self._private_attributes or 
+        elif stat_name in self._private_attributes or self._public_data is None:
             stat = self._private_data.get_stat(stat_name)
             logging.info("%s.get_stat():getting private data %s.", __class__, stat_name)
         else:
-            stat_name = self.category + RPGObject.DELIMITER + self.name + RPGObject.DELIMITER + stat_name
+            stat_name = self.category + StatEngine.DELIMITER + self.name + StatEngine.DELIMITER + stat_name
             stat = self._public_data.get_stat(stat_name)
             logging.info("%s.get_stat():getting public data %s.", __class__, stat_name)
 
@@ -458,10 +481,10 @@ class Character(object):
             if self._public_data is None:
                 raise Exception("%s.add_stat(): Tried to add a global stat from %s which has no public data." % (__class__, self.name))
             self._public_data.add_stat(new_stat)
-        elif  self._public_data is None: #new_stat.name in self._private_attributes or
+        elif new_stat.name in self._private_attributes or self._public_data is None:
             self._private_data.add_stat(new_stat)
         else:
-            new_stat.name = self.category + RPGObject.DELIMITER + self.name + RPGObject.DELIMITER + new_stat.name
+            new_stat.name = self.category + StatEngine.DELIMITER + self.name + StatEngine.DELIMITER + new_stat.name
             self._public_data.add_stat(new_stat)
 
     def update_stat(self, stat_name : str, new_value : float, global_stat : bool = False):
@@ -496,7 +519,19 @@ class Character(object):
             # Else increment the existing stat
             else:
                 self.increment_stat(stat.name, stat.value)
+#######################################################################
+#some propertys for accessing stats
+    @property
+    def HP(self):
+        return self.get_stat(Stats.sHP).value
+    @property
+    def MaxHP(self):
+        return self.get_stat(Stats.sMaxHP).value
 
+    #@public_data.setter
+    #def HP(self, amount : float):          derived stat!
+    #    self.set_stat(Stats.sHP,amount)
+#######################################################################
     def setFaction(self,Faction):
         self.faction = Faction
 
@@ -512,16 +547,19 @@ class Character(object):
         return None
 
     def damage(self,amount):
-        self.stats.HP-=amount
-        if(self.stats.HP<0): self.stats.HP=0
+        self.increment_stat(Stats.sDamage,amount)
+        #self.stats.HP-=amount
+        #if(self.stats.HP<0): 
+        #    self.stats.HP=0
+        pass
 
     def isInhibited(self):
         """dead,paralyzed,.."""
-        return self.stats.HP<=0
+        return self.HP<=0
 
     def isDead(self):
         """dead"""
-        return self.stats.HP<=0
+        return self.HP<=0
 
     def on_nextTurn(self):
         for effect in self.effects:

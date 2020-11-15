@@ -1,8 +1,10 @@
 import os
+import cProfile
 import pygame
 import pygame_menu
 import random
 import src.Const as Const
+import src.Components.ResourceManager as RM
 import src.GameModeObserver as GameModeObserver
 import src.GameModes.PlayMode as PlayMode
 import src.GameModes.BattleMode as BattleMode
@@ -28,9 +30,14 @@ class App(GameModeObserver.GameModeObserver):
     def on_init(self):
         pygame.mixer.pre_init(44100, -16, 2, 512) #if this line is not placed before pygame.init there might be delay on sound, also buffersize should be small
         pygame.init()
-        self.screen = pygame.display.set_mode(Const.WINDOW_SIZE, pygame.HWSURFACE | pygame.DOUBLEBUF  ) #| pygame.SCALED??
+        self.screen = pygame.display.set_mode(Const.WINDOW_SIZE,  pygame.HWSURFACE | pygame.DOUBLEBUF  ) #| pygame.SCALED??   HWSURFACE only with pygame.FULLSCREEN ??
         pygame.mixer.init()
         self.clock = pygame.time.Clock()
+
+        RM.set_sounds_path(Const.resource_path("assets/sounds"))
+        RM.set_images_path(Const.resource_path("assets"))
+        RM.set_fonts_path(Const.resource_path("assets/fonts"))
+
         self.menumode = MenuMode.MenuMode(self.screen,self.state)
         self.menumode.addObserver(self)
         intro = MovieMode.SceneData()
@@ -124,6 +131,12 @@ class App(GameModeObserver.GameModeObserver):
         pygame.display.set_caption(caption)
 
 if __name__ == "__main__" :
+    def run():
+        theApp = App()
+        theApp.on_execute()
+
     """if this script was the start script- run the App"""
-    theApp = App()
-    theApp.on_execute()
+    #cProfile.run('run()')
+    run()
+
+    

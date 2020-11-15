@@ -4,7 +4,7 @@ import pygame
 #some global constants
 
 FPS = 60.0
-WINDOW_SIZE = (640, 640)
+WINDOW_SIZE = (1000, 1000)
 CAPTION = "dungeon"
 BACKGROUND_COLOR = (40, 40, 40)
 
@@ -23,6 +23,7 @@ YELLOW = (155, 155, 0)
 BRIGHT_GRAY = (128, 128, 128)
 DARK_GRAY = (40, 40, 40)
 CYAN = (0, 255, 255)
+OPAGUE = (0, 0, 0,0)
 
 COLOR_KEY = (255, 0, 255) #transparency color of sprites without alpha
 

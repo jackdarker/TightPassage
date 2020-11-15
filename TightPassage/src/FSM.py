@@ -40,7 +40,8 @@ class State(object):
         should return statename to switch to or None"""
         for trans in self.transitions:
             dst = trans(self)
-            if dst!=None and dst!='' : return dst
+            if dst!=None and dst!='' : 
+                return dst
         return None
 
     def __repr__(self):
@@ -78,6 +79,7 @@ class FSM(object):
         """
         dst = self.currState.checkTransition()
         if dst!=None and dst!='':
+            print(dst)
             self.forceState(dst)
             return self.currState.name
         return ''

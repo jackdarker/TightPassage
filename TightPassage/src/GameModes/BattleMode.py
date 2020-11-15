@@ -3,7 +3,7 @@ import pygame_menu
 import src.Const as Const
 import src.GameMode as GameMode
 from src.BattleMode.BattleController import BattleData,BattleController
-from src.BattleMode.BattleScreen import BattleScreen
+from src.BattleMode.BattleScreen import *
 
 class BattleMode(GameMode.GameMode):
     """turnbased battlescreen

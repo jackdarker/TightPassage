@@ -4,8 +4,10 @@ import random
 from pygame.locals import *
 import src.Const as Const
 from src.UI.pgu.pgu import gui
+from src.UI.pgu.pgu import text
 from src.UI.pgu.pgu import html
-
+from src.UI.pgu.pgu.gui import pguglobals
+import src.Components.ComponentGraphics
 
 class IconButton(gui.Button):
     """a button with a icon
@@ -63,6 +65,7 @@ class Tabsheet(gui.Container):
         #when the toolbutton is pressed it will call gui.CHANGE->tab() and this will switchout the boxwidget with c,t or d
         noPages= 0
         pageSize = (0,0)
+        self.tabContent = tabContent
         for tab in tabContent:
             noPages +=1
             pageSize = (max(pageSize[0],tabContent[tab].style.width), max(pageSize[1],tabContent[tab].style.height))
@@ -87,6 +90,9 @@ class Tabsheet(gui.Container):
     def _switchTab(self):
         self.box.widget = self.tabs.value
 
+    def switch_tab(self,label):
+        self.box.widget =self.tabContent[label]
+
     def toggle_expand(self):
         #todo when not expanded only the expand-button will be visible
         if(self.is_expanded):
@@ -106,27 +112,25 @@ class Textlog(gui.Container):
     """
     def __init__(self,**params):
         super(Textlog,self).__init__(**params)
-
+        self.layout = gui.Table()
         textWidth=scrollWidth=0
+        self.linecount =0
         if('width' in params):
-            textWidth = params['width']-100
-            scrollWidth = params['width']-50
-
+            textWidth = params['width']-50
+            scrollWidth = textWidth
+        
         self.maxScrollHeight =0
-        self.minScrollHeight = 30
         if('height' in params):
             self.maxScrollHeight = params['height']
-        self.layout = gui.Table()
-
         
-        self.doc = gui.Document(width=textWidth)
+        self.doc = gui.TextArea(value="",focusable=True,editable=True,width=textWidth,height=self.maxScrollHeight,align=-1,valign=-1)#gui.Document(width=textWidth,align=-1,valign=-1)
         self.scrollList = gui.ScrollArea(self.doc,width=scrollWidth,height=self.maxScrollHeight,hscrollbar=False, vscrollbar=True)
-        
+        space = self.doc.style.font.size(" ")
+        self.minScrollHeight = space[1] #at least 1 line visible
         self.font = pygame.font.SysFont("sans", 16)     #todo styling
-        self.doc.block(align=-1)
+        #self.doc.block(align=-1)
 
         self.layout.tr()
-           
         self.layout.add(self.scrollList,col=0,row=0,rowspan=5)
         #resize button
         bt = gui.Button('V')
@@ -143,15 +147,27 @@ class Textlog(gui.Container):
         #self.set_text('Cuzcos Paint is a revolutionary new paint program it has all the awesome features that you need to paint really great pictures.')
         
 
-    def set_text(self,text):
+    def add_text(self,text):
+        self.linecount +=1
+        if(self.linecount>20):
+            self.doc.value =""
+            self.linecount=0
+        self.doc.value +="""\n""" + text
+        self.scrollList.set_vertical_scroll(65535)  #scrolls automat. to end of list
+        return  #todo if adding each word to document as label, this will cause huge FPS drop
+        #Textarea on opposite doesnt resize to textsize and therfore doestn make use of scrollbars ?!
+        #self.doc.remove_all()
         space = self.font.size(" ")
+        self.doc.br(space[1])
         for word in text.split(" "): 
             self.doc.add(gui.Label(word))
             self.doc.space(space)
-        self.doc.br(space[1])
+        
         self.scrollList.set_vertical_scroll(65535)  #scrolls automat. to end of list
 
     def clear_text(self):
+        self.doc.value =""
+        return
         self.doc.remove_all()
         #add at least space or area shrinks to 0
         space = self.font.size(" ")
@@ -160,13 +176,161 @@ class Textlog(gui.Container):
     def toggle_expand(self):
         if(self.is_expanded):
             self.style.height=self.doc.style.height=self.scrollList.style.height= self.minScrollHeight
+            pass
         else:
             self.style.height=self.doc.style.height=self.scrollList.style.height= self.maxScrollHeight
+            self.doc.vscroll = 0
+            pass
         self.is_expanded = not self.is_expanded
         self.scrollList.chsize()
         self.doc.chsize() 
         self.chsize()
-        self.set_text('Cuzcos Paint is a revolutionary new paint program it has all the awesome features that you need to paint really great pictures.')
+
+class PercentBar(pygame.sprite.Sprite):
+    """similiar to Progressbar but with change of color depending actual value
+        gradient is list of tuples (threshold,color); the color will be active if value>=threshold
+        there should be at least listitems for value = min and =max
+    """
+
+    def __init__(self, size, gradient, horizontal=True):
+        self.gradient = gradient
+        self.color = gradient[0][1]
+        pygame.sprite.Sprite.__init__(self)
+        self.percent = 1.0
+        self.horizontal = horizontal
+        self.image = pygame.Surface(size).convert_alpha()
+        self.rect = self.image.get_rect()
+
+    def set_percent(self, value):
+        """value is [0.00..1.00]
+        """
+        self.percent = value
+        if(self.percent<0): self.percent=0
+        for grad in self.gradient:
+            if(self.percent>=grad[0]):
+                self.color=grad[1]
+        if self.horizontal:
+            width = round(self.rect.w * self.percent)
+            height = self.rect.h
+        else:
+            width = self.rect.w
+            height = round(self.rect.h * self.percent)
+        self.image.fill(Const.OPAGUE)
+        pygame.draw.rect(self.image,self.color,(0, 0, width, height))
+        pygame.draw.rect(self.image,Const.BLACK,self.rect,1)
+
+    def draw(self, surface):
+        
+        # Render to the screen
+        surface.blit(self.image, (0,0))
+
+    def update(self):
+        pass
+
+class ColorBar(gui.ProgressBar):
+    """similiar to Progressbar but with change of color depending actual value
+        gradient is list of tuples (threshold,color); the color will be active if value>=threshold
+        there should be at least listitems for value = min and =max
+    """
+    def __init__(self,value,min,max,gradient,**params):
+        self.gradient = gradient
+        self.color = gradient[0][1]
+        super(ColorBar,self).__init__(value,min,max,**params)
+        
+    #@property
+    #def value(self):
+    #    return super(ColorBar,self).value
+
+    @gui.ProgressBar.value.setter
+    def value(self, val):
+        for grad in self.gradient:
+            if(val>=grad[0]):
+                self.color=grad[1]
+        #wtf: cannot call super().value=val; instead i have to use invisible functions fset,fget,fdel to reroute call
+        gui.ProgressBar.value.fset(self, val)
+
+
+    def paint(self,s):
+        if (self.value != None):
+            r = pygame.rect.Rect(0,0,self.rect.w,self.rect.h)
+            r.w = r.w*(self.value-self.min)/(self.max-self.min)
+            self.bar = r
+            pguglobals.app.theme.render(s,self.color,r)
+
+class CharacterCard(gui.Container):
+    """displays the actual character-bust and stats
+    """
+    def __init__(self, **params):
+        #Todo by default container dont have backgrounds so we assign a Image here
+        params['background'] = pygame.image.load(Const.resource_path("assets/pgu_themes/game/dialog.png")) #src.Const.WHITE  
+        super(CharacterCard,self).__init__(**params)
+        #self.layout = gui.Table()
+        #self.layout.style.width=250
+        #self.layout.style.height=200
+        self.style.width=250
+        self.style.height=200
+        self.char=None
+        self.dirty = True
+        icon = pygame.Surface((64,64)).convert_alpha()
+        icon.fill(Const.RED)
+        self.Bust = gui.Image(icon)
+        self.Name = gui.Label("???")
+        #self.layout.tr()
+        #self.layout.add(self.Bust,col=0,row=0,rowspan=2,colspan=5)
+        self.Healthbar = ColorBar(10,0,100,[(0,Const.RED),(20,Const.YELLOW),(50,Const.GREEN)],width=100)
+        #self.layout.tr()
+        #self.layout.add(self.Healthbar,col=1,row=6)
+        self.Staminabar = gui.ProgressBar(50,0,100,width=100)
+        #self.layout.tr()
+        #self.layout.add(self.Healthbar2,col=1,row=7)
+
+        def myfnc(target):
+            #target.value+=1
+            pass
+        self.Bust.connect(gui.CLICK,myfnc,self.Healthbar)
+        #self.add(self.layout,0,0)
+        self.add(self.Name,10,10)
+        self.add(self.Bust,10,30)
+        self.add(self.Healthbar,100,10)
+        self.add(self.Staminabar,100,40)
+
+    #def draw(self, surface):
+        # Render to the screen
+     #   surface.blit(self.Frame, (0,0))
+     #   surface.blit(self.Bust, (0,0))
+     #   self.Healthbar.draw(surface)
+
+    def set_char(self,char):
+        """connects the card with a character"""
+        self.char=char
+        self.dirty = True
+
+    def update(self,s): 
+        #this is not an override from gui.Container - because we dont use gui.desktop no update is called
+        if (self.dirty and self.char != None):
+            self.Name.set_text(self.char.name)
+            self.Bust.value = self.char.get_portrait()
+            self.Healthbar.value = self.char.HP*100 / self.char.MaxHP
+        self.dirty = False
+        pass
+
+
+class OBSOLETE_Textbox(gui.Label):  #use TextArea instead
+    """
+    """
+    def __init__(self,value="",**params):
+        super(Textbox,self).__init__(value,**params)
+        if('width' in params):
+            self.style.width = params['width']
+
+        if('height' in params):
+            self.style.height = params['height']
+
+    def resize(self,width=None,height=None):
+        return (self.style.width, self.style.height)
+
+    def paint(self,s):
+        text.writewrap(s,self.style.font,pygame.Rect(0,0,self.style.width,self.style.height),Const.RED,self.value)
 
 
 class OBSOLETE_Textlog(gui.Document):
@@ -208,8 +372,8 @@ class OBSOLETE_Textlog(gui.Document):
         #self.add(html.HTML(text,color=Const.YELLOW,bgcolor=Const.RED))
         #self.value=text
         #html.write(self.surface,self.font,self._rect,text,color=Const.YELLOW)
+        pass
 
-#OBSOLETE !
 class OBSOLETE_ListControl(gui.Table):
     """...using a table"""
     def __init__(self,maxRows=5,selectCB=None,**params):

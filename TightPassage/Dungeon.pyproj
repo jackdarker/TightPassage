@@ -59,10 +59,19 @@
     <Compile Include="src\AI\SensorObstacle.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="src\BattleMode\BattleAvatar.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="src\BattleMode\BattleController.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\BattleMode\BattleScreen.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\ClassDecorators.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\Components\RenderEffectManager.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\Components\Skill.py">
@@ -290,6 +299,7 @@
     <Compile Include="src\Vector.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="testGame\battleTest.py" />
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="Global|PythonCore|3.6" />
@@ -320,6 +330,7 @@
     <Folder Include="src\UI\pgu\pgu\" />
     <Folder Include="src\UI\pgu\pgu\gui\" />
     <Folder Include="src\UI\pgu\scripts\" />
+    <Folder Include="testGame\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="assets\pgu_themes\yellow\box.down.png" />

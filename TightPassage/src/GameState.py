@@ -1,5 +1,6 @@
 import pygame
 from src.Vector import Vector2
+from src.Components.StatEngine import *
 
 class GameState():
     """Holds all the data of the game
@@ -32,6 +33,7 @@ class GameState():
         self.currentMazeNode = None
         #battlevars
         self.battleData = None
+        self.StatEngine = StatEngine("Game")
 
     @property
     def worldWidth(self):

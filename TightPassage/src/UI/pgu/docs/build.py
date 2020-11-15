@@ -5,7 +5,7 @@ import os
 import site
 
 site.addsitedir("..")
-
+os.chdir("../doc/pgu/")
 for name in (
     "pgu",
     "pgu.html",
@@ -51,14 +51,14 @@ for name in (
     "pgu.tilevid",
     "pgu.timer",
     "pgu.vid"):
-    pydoc.writedoc(name)
+    pydoc.writedoc("src.UI.pgu."+name)
 
 # Write the index file
 fd = open("index.html", "w")
 fd.write("""
 <html>
 <head>
-<meta http-equiv="refresh" content="0;pgu.html"> 
+<meta http-equiv="refresh" content="0;src.UI.pgu.pgu.html"> 
 </head>
 </html>
 """)

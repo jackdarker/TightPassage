@@ -4,10 +4,12 @@ import time
 import random
 from pygame.locals import *
 import src.Const as Const
-#import pygame_menu
+import src.Components.ResourceManager as RM
+from src.BattleMode.BattleAvatar import BattleAvatar
 from src.FSM import FSM,State
 from src.UI.Controls import *
 from src.UI.pgu.pgu import gui
+from src.Components.RenderEffectManager import *
 
 class BattleScreen():
     """implements the view for a battle"""
@@ -91,12 +93,15 @@ class BattleScreen():
         self.battleController = battleController
         self.battleData = battleController.battleData
         self.battleData.addObserver(self)   #recevie notification on modelchange
-        
+        self.spriteGroup = pygame.sprite.Group() #holder for all battler-sprites
+        self.bg = pygame.Surface(Const.WINDOW_SIZE)
         self._setupHud()
         
+        #self.font = pygame.font.Font(pygame.font.get_default_font(),36)
 
-        self.font = pygame.font.Font(pygame.font.get_default_font(),36)
-
+        self.Avatars = {}
+        self.SkillToRenderConverter= SkillEffectToRenderEffectConverter()
+        self.MgrEffect = RenderEffectManager(self._on_effectFinished)
         self.message = ""
         self.delay = 0
         self.AnimID = ""
@@ -107,75 +112,75 @@ class BattleScreen():
     
     def _setupHud(self):
         self.form = gui.Form()
-        themetouse = "default" #Const.resource_path("assets/pgu_themes/yellow")
+        themetouse = Const.resource_path("assets/pgu_themes/game") #("default")
         self.app = gui.App(theme=gui.Theme(themetouse))
-        #the container for the widhgets
-        c = gui.Table(align=-1,valign=1)
+        #the container for the widgets
+        c = gui.Container(align=-1,valign=1)
+        #playercontrolls container
+        playerCtrl = gui.Table(align=-1,valign=1)
         tabsheetHeight =0   #240
-        #grid with buttons
+        
+        #another grid with buttons
         tbSkills = gui.Table()
         tbSkills.style.width = Const.WINDOW_SIZE[0]-20
         tbSkills.style.height = tabsheetHeight
-        #tbSkills.tr()
-        #tbSkills.td(gui.Label("Skills",color=Const.YELLOW),colspan=2)
-
-        tbSkills.tr()
-        bt = IconButton("Clickdfsdgffdgdgf 1 Me!")
-        #bt.connect(gui.KEYDOWN, resizeMe, bt)
-        tbSkills.td(bt,align=-1)
-        tbSkills.tr()
-        bt = IconButton("Click  2 Me!")
-        #bt.connect(gui.CLICK, resizeMe, bt)
-        tbSkills.td(bt,align=-1)
-        tbSkills.tr()
-        bt = IconButton("Click      3 Me!")
-        #bt.connect(gui.CLICK, resizeMe,bt)
-        tbSkills.td(bt,align=-1)
         self.tbSkills =tbSkills
-
+        
         #another grid with buttons
         tbItems = gui.Table()
         tbItems.style.width = Const.WINDOW_SIZE[0]-20
         tbItems.style.height = tabsheetHeight
-        for i in range(0,5):
-            tbItems.tr()
-            for i in range(0,3):
-                bt = IconButton("---")
-                bt.disabled=True
-                #bt.connect(gui.KEYDOWN, resizeMe, bt)
-                tbItems.td(bt,align=-1)
         self.tbItems =tbItems
-        if(True):
-            tablabels = Tabsheet(tabContent = {'Skills': self.tbSkills,'Items':self.tbItems})
-        else:
-            #creates a tab; buttons are used to switch tabs
-            self.tabs = gui.Group()
-            self.tabs.connect(gui.CHANGE,tab)
-            tablabels = gui.Table()
-            tablabels.tr()
-            #when the toolbutton is pressed it will call gui.CHANGE->tab() and this will switchout the boxwidget with c,t or d
-            b = gui.Tool(self.tabs,gui.Label("Skills"),self.tbSkills)    
-            tablabels.td(b)
-            tablabels.tr()
-            b = gui.Tool(self.tabs,gui.Label("Items"),self.tbItems)
-            tablabels.td(b)
-            tablabels.tr()
-            b = gui.Tool(self.tabs,gui.Label("Magic"),self.tbSkills)
-            tablabels.td(b)
-            #the following widget will be switched out when pressing on the tablabels
-            #tablabels.tr()
-            spacer = gui.Spacer(Const.WINDOW_SIZE[0]-20,240)
-            self.box = gui.ScrollArea(spacer,height=spacer.rect[1])
-            tablabels.td(self.box,row=0,col=1,style={'border':1},rowspan=3)
-            tablabels.tr()
+
+        #tabsheet where the player selects action & items
+        self.tablabels = Tabsheet(tabContent = {'Skills': self.tbSkills,'Items':self.tbItems})
+        
 
         self.Log = Textlog(width=Const.WINDOW_SIZE[0],height=300)
-        c.tr()
-        c.add(self.Log)#,20,0)
-        c.tr()
-        c.add(tablabels)#,0,200)
-
+        playerCtrl.tr()
+        playerCtrl.add(self.Log)#,20,0)
+        #self.Tooltip = gui.ScrollArea(gui.TextArea(value="""""",focusable=False,editable=False,width=Const.WINDOW_SIZE[0]-150,height=100),hscrollbar=False, vscrollbar=True,width=Const.WINDOW_SIZE[0]-50,height=100)
+        self.Tooltip = gui.TextArea(value="""""",focusable=False,editable=False,width=Const.WINDOW_SIZE[0]-50)
+        playerCtrl.tr()
+        playerCtrl.add(self.Tooltip)#,20,0)
+        playerCtrl.tr()
+        playerCtrl.add(self.tablabels)#,0,200)
+        c.add(playerCtrl,0,200)
+        self.playerCard = CharacterCard()
+        c.add(self.playerCard,0,0)
         self.app.init(c)
+        pass
+
+    def _createButtons(self,btTable,lstItems, clickCallback):
+        """creates a button grid. 
+            lstItems is array of strings or objects (must have property name)
+            callback is a function which will receive the object from the list
+        """
+        #todo if list to big, create multiple pages
+        for bt in btTable.widgets:
+            bt.disconnect(gui.CLICK)
+        btTable.clear()
+        size = len(lstItems)
+        i=0
+        for y in range(0,5):    #todo fill up cols first, not rows
+            btTable.tr()
+            for x in range(0,3):
+                if(size>i):
+                    if(type(lstItems[i])==str):
+                        label=lstItems[i]
+                    else:
+                        label=lstItems[i].name
+                    bt = IconButton(label)
+                    bt.disabled=False
+                    bt.connect(gui.CLICK, clickCallback, lstItems[i])
+                    btTable.td(bt,align=-1)
+                #else:
+                    #bt = IconButton("---")
+                    #bt.disabled=True
+                    #btTable.td(bt,align=-1)
+                i+=1
+    
+    def _on_effectFinished(self):
         pass
 
     def scrap_pgutest():
@@ -205,28 +210,79 @@ class BattleScreen():
         #tbSkills.add("item2 ",value=1)
         #tbSkills.add("item3 ",value=2)
         pass
+    
+    def processInput(self,events):
+        #if(self.menu.is_enabled()):
+        #    self.menu.update(events)
+        #else:
+        for e in events:   #pgu gui update
+            self.app.event(e)
+
+    def update(self,dt):
+        self.spriteGroup.update(dt)  #dt ??
+        self.MgrEffect.update(dt)
+        if(self.delay>0): 
+            self.delay = self.delay -dt
+            self.notifyAnimationDone(self.AnimID)
+        self.fsm.checkTransition() 
+        pass
+        
+    def render(self, window):
+        #fill with black and background
+        #window.fill((0, 0, 0))
+        window.blit(self.bg,(0,0))
+
+        #if(self.message != ''):
+        #x = (window.get_width()) // 2
+        #y = (window.get_height()) // 2
+        #__class__.renderTextCenteredAt(self.message, self.font, Const.WHITE, x, y, window, 200)
+
+        #render teams
+        self.spriteGroup.draw(window)
+        self.MgrEffect.draw(window)
+        self.playerCard.update(window)
+
+        #render menu
+        #if (self.menu.is_enabled()):
+        #    self.menu.draw(window)
+        self.app.paint(window) #pgu gui update
+
+    def showSkillMenu(self):
+        self.menu.add_button('Attack', self._skillSelected)
+
+    def _skillSelected(self):
+        pass
 
     #methods called by model observer
     def OnInitBattle(self,ID):
         self.message = ("Starting Battle between")
+        self.bg.blit(self.battleData.arena.bgImage,self.battleData.arena.bgOffset)  #bliting a large bgImage to screen is much slower then bliting a surface that got the image blitted if the surface is cropped??
         first =True
         for team in self.battleData.teams:
             if(not first):
                 self.message +=('   and   ')
             first=False
+            i=0
             for char in team.chars:
-                self.message +=(team.get_char(char).name+(', '))
+                _char = team.get_char(char)
+                self.message +=(_char.name+(', '))
+                pos = self.battleData.arena.formation[_char.faction+str(i)]
+                avatar = BattleAvatar(_char)
+                avatar.set_pos(pos,0)
+                self.spriteGroup.add(avatar)
+                self.Avatars[char]=avatar
+                i+=1
         self.message = self.message #__class__.wrap_words_to_fit(self.message,1.0,300)
-        self.Log.set_text(self.message)
+        self.Log.add_text(self.message)
         self.delay=1000
         self.AnimID = ID #sys._getframe().f_code.co_name
         pass
 
     def OnNewTurn(self,ID):
-        self.Log.set_text("Starting Next Turn")
+        self.Log.add_text("Starting Next Turn")
         chars = self.battleData.getAllChars()
         for char in chars:
-            self.Log.set_text(char.name+ ' has HP='+str(char.stats.HP))
+            self.Log.add_text(char.name+ ' has HP='+str(char.HP))
         self.delay=1000
         self.AnimID = ID 
         pass
@@ -239,32 +295,35 @@ class BattleScreen():
 
     def OnCombatAction(self,ID,actionResult):
         for effect in actionResult.effects:
-            self.Log.set_text(self.battleData.currCharacter +
+            self.Log.add_text(self.battleData.currCharacter +
                   " causes " + effect.getDescription() +
                   " on " + effect.owner.name)
+            #convert the skilleffect to its visual appearance
+            rendEff = self.SkillToRenderConverter.convertSkillEffectToRenderEffect(effect,self.Avatars)
+            if(rendEff!=None): self.MgrEffect.addEffect(rendEff,defer = True)
         
         self.delay=100
         self.AnimID = ID 
         pass
 
     def OnVictory(self,ID):
-        self.Log.set_text("Congrats. You defeated all opponents.")
+        self.Log.add_text("Congrats. You defeated all opponents.")
         self.delay=1000
         self.AnimID = ID 
         pass
 
     def OnDefeat(self,ID):
-        self.Log.set_text("You failed.")
+        self.Log.add_text("You failed.")
         self.delay=1000
         self.AnimID = ID 
         pass
 
     def OnFleeing(self,ID):
-        self.Log.set_text("You retreat hastily.")
+        self.Log.add_text("You retreat hastily.")
         self.delay=1000
         self.AnimID = ID 
         pass
-
+###########################################################################
     class StateBeforeInit(State):
         def __init__(self,battleScreen):
             super().__init__(__class__.__name__)
@@ -275,7 +334,7 @@ class BattleScreen():
 
         def checkTransition(self):
             return BattleScreenConsole.StateInit.__name__
-    
+###########################################################################
     class StateInit(State):
         def __init__(self,battleScreen):
             super().__init__(__class__.__name__)
@@ -286,37 +345,35 @@ class BattleScreen():
 
         def checkTransition(self):
             return None
-    
+###########################################################################
     class StatePlayerSelectSkill(State):
         """display which actor to use and let the player select a skill"""
         def __init__(self,battleScreen):
             super().__init__(__class__.__name__)
             self.battleScreen = battleScreen
             self.battleData = battleScreen.battleData
-    
+
+        def cbSkillBt(self,label): #click callback for skillbuttons
+            self.battleScreen.selectedSkill = label
+
         def onEnter(self):
-            self.battleScreen.selectedSkill = None
+            self.battleScreen.selectedSkill = None      #ID of the selected skill
             self.battleScreen.selectedTarget =  None
             self.forceSkip=False
             char = self.battleData.getCharacterByID(self.battleData.currCharacter)
+            self.battleScreen.playerCard.set_char(char)
             if(char.isInhibited()):
-                self.battleScreen.Log.set_text(self.battleData.currCharacter +" cannot do anything")
+                self.battleScreen.Log.add_text(self.battleData.currCharacter +" cannot do anything")
                 self.forceSkip=True #skip skill and targetselection
                 self.battleScreen.delay=500
             else:
-                self.battleScreen.Log.set_text("select move for "+self.battleData.currCharacter)
-                return
-                i=1
-                skills =[]
+                skills=[]
                 for skill in char.skills:
-                    print(str(i)+': '+skill.name)
                     skills.append(skill.name)
-                    i+=1
-                skill= input("-->")
-                if(skill.isdigit()):
-                    x = int(skill)
-                    skill = skills[x-1]
-                self.battleScreen.selectedSkill = skill
+                self.battleScreen.Log.add_text("select move for "+self.battleData.currCharacter)
+                self.battleScreen._createButtons(self.battleScreen.tbSkills,skills,self.cbSkillBt)
+                self.battleScreen.tablabels.switch_tab('Skills')
+
             pass
 
         def checkTransition(self):
@@ -325,25 +382,40 @@ class BattleScreen():
             elif(self.battleScreen.selectedSkill != None):
                 return BattleScreenConsole.StatePlayerSelectTarget.__name__
             return None
-
+###########################################################################
     class StatePlayerSelectTarget(State):
         def __init__(self,battleScreen):
             super().__init__(__class__.__name__)
             self.battleScreen = battleScreen
             self.battleData = battleScreen.battleData
-    
+        
+        def cbTargetBt(self,label): #click callback for skillbuttons
+            if(label=='CANCLE'):
+                self.battleScreen.selectedSkill =None #force return to prev state
+            else:
+                self.battleScreen.selectedTarget = [label]
+
+
         def onEnter(self):
-            self.battleScreen.Log.set_text("select target for "+self.battleScreen.selectedSkill)
+            self.battleScreen.Log.add_text("select target for "+self.battleScreen.selectedSkill)
             self.battleScreen.selectedTarget =  None
             skill=self.battleData.getCharacterByID(self.battleData.currCharacter).getSkillForID(self.battleScreen.selectedSkill)
             postargets = skill.targetFilter()(self.battleData.getAllChars())
+            targets =['CANCLE']
+            for target in postargets:
+                targets.append(target)
+
+            self.battleScreen._createButtons(self.battleScreen.tbSkills,targets,self.cbTargetBt)
+            self.battleScreen.tablabels.switch_tab('Skills')
+
+            return
             i=1
             targets =[]
             for target in postargets:
-                print(str(i)+': '+target.name + ' HP=' + str(target.stats.HP)  )
+                print(str(i)+': '+target.name + ' HP=' + str(target.HP)  )
                 targets.append(target)
                 i+=1
-            self.battleScreen.Log.set_text('0: back')
+            self.battleScreen.Log.add_text('0: back')
             target= input("-->")
             if(target.isdigit()):
                 x = int(target)
@@ -363,48 +435,9 @@ class BattleScreen():
                 self.battleScreen.notifyAnimationDone(self.battleScreen.AnimID)
                 return BattleScreenConsole.StateInit.__name__
             return None
-
-    def processInput(self,events):
-        #if(self.menu.is_enabled()):
-        #    self.menu.update(events)
-        #else:
-        for e in events:   #pgu gui update
-            self.app.event(e)
-
-    def update(self,dt):
-        if(self.delay>0): 
-            self.delay = self.delay -dt
-            self.notifyAnimationDone(self.AnimID)
-        self.fsm.checkTransition() 
-        pass
-        
-    def render(self, window):
-        #fill with black
-        self.screen = window.copy()
-        self.screen.fill((0, 0, 0, 200))
-        self.screen.set_alpha(100) #why does fill with RGB+alpha not work?
-        #render background
-        window.blit(self.screen,(0,0))
-        #window.blit(self.battleData.arena.bgImage)
-
-        #if(self.message != ''):
-        x = (window.get_width()) // 2
-        y = (window.get_height()) // 2
-        __class__.renderTextCenteredAt(self.message, self.font, Const.WHITE, x, y, window, 200)
-
-        #render teams
-
-        #render menu
-        #if (self.menu.is_enabled()):
-        #    self.menu.draw(window)
-        self.app.paint(window) #pgu gui update
-
-    def showSkillMenu(self):
-        self.menu.add_button('Attack', self._skillSelected)
-
-    def _skillSelected(self):
-        pass
+###########################################################################
     
+#####################################################
     #using observer to send data to the controller
     def addObserver(self, observer):
         self.__observers.append(observer)
@@ -416,7 +449,8 @@ class BattleScreen():
     def notifyAnimationDone(self,ID):
         for observer in self.__observers:
             observer.OnAnimationDone(ID)
-
+        pass
+#just for debug
 class BattleScreenConsole(BattleScreen):
     """using text console for testing purpose
     """
@@ -448,7 +482,7 @@ class BattleScreenConsole(BattleScreen):
         print("Starting Next Turn")
         chars = self.battleData.getAllChars()
         for char in chars:
-            print(char.name+ ' has HP='+str(char.stats.HP))
+            print(char.name+ ' has HP='+str(char.HP))
         self.delay=1000
         self.AnimID = ID 
         pass
@@ -563,7 +597,7 @@ class BattleScreenConsole(BattleScreen):
             i=1
             targets =[]
             for target in postargets:
-                print(str(i)+': '+target.name + ' HP=' + str(target.stats.HP)  )
+                print(str(i)+': '+target.name + ' HP=' + str(target.HP)  )
                 targets.append(target)
                 i+=1
             print('0: back')

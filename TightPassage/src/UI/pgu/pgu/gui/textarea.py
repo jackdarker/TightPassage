@@ -57,7 +57,7 @@ class TextArea(widget.Widget):
         if (self.vpos < self.vscroll):
             self.vscroll = self.vpos
         elif ((self.vpos - self.vscroll + 1) * self.line_h > self.rect.h):
-            self.vscroll = - (self.rect.h / self.line_h - self.vpos - 1)
+            self.vscroll = - (self.rect.h // self.line_h - self.vpos - 1)
 
         # Blit each of the lines in turn
         cnt = 0
@@ -111,7 +111,7 @@ class TextArea(widget.Widget):
     # This function sets the cursor position according to an x/y value (such as by from a mouse click)
     def setCursorByXY(self, pos):
         (x, y) = pos
-        self.vpos = ((int) (y / self.line_h)) + self.vscroll
+        self.vpos = ((int) (y // self.line_h)) + self.vscroll
         if (self.vpos >= len(self.lines)):
             self.vpos = len(self.lines) - 1
             

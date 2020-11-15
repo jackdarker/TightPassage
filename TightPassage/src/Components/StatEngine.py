@@ -313,6 +313,7 @@ class RPGDerivedStat(DerivedStat):
 The main container for stats.
 '''
 class StatEngine:
+    DELIMITER = ":" #used to build ids like category:name
     # Initialises to create a name and empty dictionary
     def __init__(self, name):
         self.name = name

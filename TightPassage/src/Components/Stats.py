@@ -1,6 +1,8 @@
 from src.Components.StatEngine import *
 
 class Stats():
+    """ this is just a utility to define the stat-names used in the game
+    """
     #core stats
     sDexterity = "Dexterity"
     sIntelligence = "Intelligence"
@@ -11,15 +13,25 @@ class Stats():
     CORE_STAT_NAMES = (sDexterity,sIntelligence,sStrength,sWisdom,sCharisma,sConstitution)
     CORE_STAT_STANDARD_ARRAY = (10, 9, 11, 8, 10, 8)
 
+    #common derived stats
+    sHP ="HP"
+    sMaxHP ="MaxHP"
+    sDamage="Damage"
+    sAttack="Att"
+    sDefense="Def"
+
+    #other stats
+    #sPosition = "Position"  
+
     sSkills = "Skills"
     sAttributes = "Attributes"
 
 
     def __init__(self):
-        self.maxHP = 10
-        self.HP = 10
-        self.Att = 3
-        self.Def = 2
+        #self.maxHP = 10
+        #self.HP = 10
+        #self.Att = 3
+        #self.Def = 2
         pass
 
 class MaxHP(RPGDerivedStat):
@@ -44,6 +56,14 @@ class HP(RPGDerivedStat):
         if dmg < 0:
             dmg = 0
         return max_HP - dmg
+
+class ActionCooldown(CoreStat):
+    def __init__(self, owner,value ):
+        super(ActionCooldown,self).__init__(__class__.__name__, Stats.sAttributes,value ,owner,lifetime=value)
+
+    #@CoreStat
+    #def tick(self):
+    #A.prop.fset(self, v)
 
 # A Lock-picking Skill stat based on Dex and Int
 class Lockpicking(RPGDerivedStat):

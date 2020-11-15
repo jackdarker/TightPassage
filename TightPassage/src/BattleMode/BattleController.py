@@ -1,30 +1,48 @@
 import pygame
 from src.FSM import FSM,State
 import src.Const as Const
+import src.Components.ResourceManager as RM
+from src.Components.Stats import Stats
 from src.BattleMode.BattleScreen import SkillRenderData
 from src.Components.Skill import SkillResult
 from src.Components.SkillDB import *
 
 class BattleController():
     """contains the logic of the battlesystem
-    executes commands on the data
+    executes commands on the data-model
     triggers updates of view
     receives commands from view
+
+    in this implementation:
+    - the execution order of each char is estimated by the data-model
+    - each character of each team has to choose its action in this order
+    - after everyone selected his action , the action is executed in same order
+
+    #todo:
+    - the data model indicates when a char can start an action
+    - then an action has to be selected
+    - the action is started, running its windup time
+    - after the windup time the action is executed
+    - after execution the cooldown-time starts
+    - after cooldown, the char is ready for next action
+    - the windup time of some actions can be interupted by a action-breakers, this will interupt the action
+    
     """
     def __init__(self,gameState,battleData):
         self.battleData = battleData
         self.AnimationDone = {}
         self.fsm = FSM(model=self,
-                       states=[StateBeforeInit(self),StateInit(self),StateCheckDefeat(self),StateNewTurn(self),
-                          StateCombatantSelection(self),StateCombatantAction(self),
-                          StateTurnEnd(self),
-                          StatePlayerLoss(self),StatePlayerVictory(self),StatePlayerFlee(self),
-                          StateDeinit(self)],
-                       initialState=StateBeforeInit.__name__)
+                       states=[ctrlStateBeforeInit(self),ctrlStateInit(self),ctrlStateCheckDefeat(self),ctrlStateNewTurn(self),
+                          ctrlStateCombatantSelection(self),ctrlStateCombatantAction(self),
+                          ctrlStateTurnEnd(self),
+                          ctrlStatePlayerLoss(self),ctrlStatePlayerVictory(self),ctrlStatePlayerFlee(self),
+                          ctrlStateDeinit(self)],
+                       initialState=ctrlStateBeforeInit.__name__)
         pass
 
     def update(self,dt):
         self.fsm.checkTransition()  #todo we dont need to poll this on every cycle
+        pass
 
     def selectSkillForCharacter(self,charname,skillname,targets):
         char =self.battleData.getCharacterByID(charname)
@@ -35,18 +53,25 @@ class BattleController():
     def OnAnimationDone(self,ID):
         self.AnimationDone[ID]=True
 
-class StateBeforeInit(State):
+class ctrlStateBeforeInit(State):
     def __init__(self,battleController):
         super().__init__(__class__.__name__)
         self.controller = battleController
     
     def onEnter(self):
+        for team in self.controller.battleData.teams:
+            i=0
+            for char in team.chars:
+                _char = team.get_char(char)
+                #pos = self.controller.battleData.arena.formation[_char.faction+str(i)]
+                #_char.cGraphic.set_rects(pos)
+                i+=1
         pass
 
     def checkTransition(self):
-        return StateInit.__name__
+        return ctrlStateInit.__name__
 
-class StateInit(State):
+class ctrlStateInit(State):
     AnimID = hash('OnInitBattle')
 
     def __init__(self,battleController):
@@ -54,16 +79,16 @@ class StateInit(State):
         self.controller = battleController
     
     def onEnter(self):
-        self.controller.AnimationDone[StateInit.AnimID]=False
-        self.controller.battleData.notifyOnInitBattle(StateInit.AnimID)
+        self.controller.AnimationDone[ctrlStateInit.AnimID]=False
+        self.controller.battleData.notifyOnInitBattle(ctrlStateInit.AnimID)
         pass
 
     def checkTransition(self):
-        if(self.controller.AnimationDone[StateInit.AnimID]==True):
-            return StateCheckDefeat.__name__
+        if(self.controller.AnimationDone[ctrlStateInit.AnimID]==True):
+            return ctrlStateCheckDefeat.__name__
         return None
 
-class StateCheckDefeat(State):
+class ctrlStateCheckDefeat(State):
     def __init__(self,battleController):
         super().__init__(__class__.__name__)
         self.controller = battleController
@@ -76,14 +101,14 @@ class StateCheckDefeat(State):
         #evaluate if team is defeated and switch to postBattleScene
         self.controller
         if(self.battleData.isTeamFleeing('Player')):
-            return StatePlayerFlee.__name__
+            return ctrlStatePlayerFlee.__name__
         elif(self.battleData.isTeamDefeated('Player')):
-            return StatePlayerLoss.__name__
+            return ctrlStatePlayerLoss.__name__
         elif(self.battleData.isTeamDefeated('Player',invers=True)):
-            return StatePlayerVictory.__name__
-        else:   return StateNewTurn.__name__
+            return ctrlStatePlayerVictory.__name__
+        else:   return ctrlStateNewTurn.__name__
 
-class StateNewTurn(State):
+class ctrlStateNewTurn(State):
     AnimID = hash('OnNewTurn')
     def __init__(self,battleController):
         super().__init__(__class__.__name__)
@@ -102,10 +127,10 @@ class StateNewTurn(State):
 
     def checkTransition(self):
         if(self.controller.AnimationDone[__class__.AnimID]==True):
-            return StateCombatantSelection.__name__
+            return ctrlStateCombatantSelection.__name__
         return None
 
-class StateCombatantSelection(State):
+class ctrlStateCombatantSelection(State):
     AnimID = hash('OnNextPlayerChar')
     def __init__(self,battleController):
         super().__init__(__class__.__name__)
@@ -132,15 +157,15 @@ class StateCombatantSelection(State):
             self.controller.battleData.nextCharacter()
             #if there are more combatants switch to the next one
             if(not self.controller.battleData.finishTurn ):
-                return StateCombatantSelection.__name__
+                return ctrlStateCombatantSelection.__name__
             else:
                 #otherwise execute move
                 self.controller.battleData.resetNextCharacter() #reset iterator since looping again in next state
                 self.controller.battleData.nextCharacter()
-                return StateCombatantAction.__name__
+                return ctrlStateCombatantAction.__name__
         pass
 
-class StateCombatantAction(State):
+class ctrlStateCombatantAction(State):
     AnimID = hash('OnCombatAction')
 
     def __init__(self,battleController):
@@ -164,13 +189,13 @@ class StateCombatantAction(State):
             self.controller.battleData.nextCharacter()
             if(not self.controller.battleData.finishTurn ):
                 #if there are more combatants switch to the next one
-                return StateCombatantAction.__name__
+                return ctrlStateCombatantAction.__name__
 
             #otherwise end turn
-            return StateTurnEnd.__name__
+            return ctrlStateTurnEnd.__name__
         pass
 
-class StateTurnEnd(State):
+class ctrlStateTurnEnd(State):
     AnimID = hash('OnTurnEnd')
     def __init__(self,battleController):
         super().__init__(__class__.__name__)
@@ -182,10 +207,10 @@ class StateTurnEnd(State):
 
     def checkTransition(self):
         #start next cycle
-        return StateCheckDefeat.__name__
+        return ctrlStateCheckDefeat.__name__
     pass
 
-class StatePlayerLoss(State):
+class ctrlStatePlayerLoss(State):
     AnimID = hash('OnDefeat')
     def __init__(self,battleController):
         super().__init__(__class__.__name__)
@@ -201,10 +226,10 @@ class StatePlayerLoss(State):
     def checkTransition(self):
         #wait until confirmation, then terminate
         if(self.controller.AnimationDone[__class__.AnimID]==True):
-            return StateDeinit.__name__
+            return ctrlStateDeinit.__name__
         pass
 
-class StatePlayerVictory(State):
+class ctrlStatePlayerVictory(State):
     AnimID = hash('OnVictory')
     def __init__(self,battleController):
         super().__init__(__class__.__name__)
@@ -220,10 +245,10 @@ class StatePlayerVictory(State):
     def checkTransition(self):
         #wait until confirmation, then terminate
         if(self.controller.AnimationDone[__class__.AnimID]==True):
-            return StateDeinit.__name__
+            return ctrlStateDeinit.__name__
         pass
 
-class StatePlayerFlee(State):
+class ctrlStatePlayerFlee(State):
     AnimID = hash('OnFleeing')
     def __init__(self,battleController):
         super().__init__(__class__.__name__)
@@ -239,10 +264,10 @@ class StatePlayerFlee(State):
     def checkTransition(self):
         #wait until confirmation, then terminate
         if(self.controller.AnimationDone[__class__.AnimID]==True):
-            return StateDeinit.__name__
+            return ctrlStateDeinit.__name__
         pass
 
-class StateDeinit(State):
+class ctrlStateDeinit(State):
     def __init__(self,battleController):
         super().__init__(__class__.__name__)
         self.controller = battleController
@@ -263,7 +288,7 @@ class BattleData():
     def __init__(self):
         self.__observers = []
         self.teams=[]
-        self.arena = None
+        self.arena = Arena()
         self.turn = -1
         self.newTurn = False
         self.finishTurn = False
@@ -347,7 +372,7 @@ class BattleData():
                (team.faction == faction and invers==True)): continue
             defeat = True
             for char in team.chars:
-                defeat = defeat and (team.get_char(char).stats.HP<=0)
+                defeat = defeat and (team.get_char(char).get_stat(Stats.sHP).value<=0)
         return defeat
 
     def isTeamFleeing(self,faction, invers=False):
@@ -413,4 +438,11 @@ class BattleData():
 class Arena():
     """defines the arena whee you are battling"""
     def __init__(self):
-        self.bgImage = None
+        #background of battle
+        self.bgImage = RM.get_image('cgs/Nature Background.png')
+        #use the offset to move the image around
+        self.bgOffset = (-100,-200)
+        #formation = (x,y) position where the battlesprites are placed
+        #todo formation can be setup by player for tactical reasons
+        self.formation = {'Player0':(100,100),'Player1':(80,200), 'Player2':(60,300),
+                          'Enemy0':(400,100), 'Enemy1':(420,200),'Enemy2':(440,300)}

@@ -87,7 +87,7 @@ class Fireball(Unit):
         """i =0 is x; i=1 is y """
         direction_vector = self.direction_offset #Interactable.DIRECT_DICT[self.direction]
         self.hitrect[i] += self.speed*direction_vector[i]
-        self.rect.center = self.hitrect.enter
+        self.rect.center = self.hitrect.center
         callback = self.collide_other(self.hitrect)  #Collidable callback created.
         collisions = pygame.sprite.spritecollide(self, self.levelData.units, False, callback)
         while collisions:

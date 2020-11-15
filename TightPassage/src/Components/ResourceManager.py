@@ -22,9 +22,6 @@ Remember to call the 'set path' functions before trying to load anything;
 otherwise, you'll get a ValueError.
 
 """
-
-
-
 __images = {}
 __fonts = {}
 __sounds = {}
@@ -42,17 +39,17 @@ def get_image(filename, force_reload = 0):
     conversion; you'll have to do that manually, if you wish.
     """
     
-    if not __images_path:
-        raise ValueError, "resources.set_images_path() not called yet."
+    if(not __images_path):
+        raise (ValueError, "resources.set_images_path() not called yet.")
     if (force_reload == 1 or filename not in __images.keys()):
         try:
             surface = pygame.image.load(os.path.join(__images_path, filename))
         except pygame.error:
-            raise IOError, "File " + filename + " not found."
+            raise(IOError, "File " + filename + " not found.")
         __images[filename] = surface
-        return surface
+        return(surface)
     else:
-        return __images[filename]
+        return (__images[filename])
 
 def has_image(filename):
     """
@@ -60,7 +57,7 @@ def has_image(filename):
     Returns true if the image is in memory, false if it has to be loaded from
     disk.
     """
-    return __images.has_key(filename)
+    return(__images.has_key(filename))
 
 def clear_image(filename):
     """
@@ -86,12 +83,12 @@ def get_font(filename, size, force_reload = 0):
     subsequent time.
     """
     if not __fonts_path:
-        raise ValueError, "resources.set_fonts_path() not called yet."
+        raise(ValueError, "resources.set_fonts_path() not called yet.")
     if (force_reload == 1 or filename not in __fonts.keys()):
         try:
             font = pygame.font.Font(os.path.join(__fonts_path, filename), size)
         except pygame.error:
-            raise IOError, "File " + filename + " not found."
+            raise(IOError, "File " + filename + " not found.")
         __fonts[filename] = font
         return font
     else:
@@ -127,12 +124,12 @@ def get_sound(filename, force_reload = 0):
     subsequent time.  
     """
     if not __sounds_path:
-        raise ValueError, "resources.set_sounds_path() not called yet."
+        raise(ValueError, "resources.set_sounds_path() not called yet.")
     if (force_reload == 1 or filename not in __fonts.keys()):
         try:
             sound = pygame.mixer.Sound(os.path.join(__sounds_path, filename))
         except pygame.error:
-            raise IOError, "File " + filename + " not found."
+            raise(IOError, "File " + filename + " not found.")
         __sounds[filename] = sound
         return sound
     else:
@@ -168,7 +165,7 @@ def set_images_path(path):
     exist, otherwise it returns True.
     """
     if not os.access(path, os.F_OK):
-        raise IOError, path + " not found."
+        raise(IOError, path + " not found.")
     if path.endswith(os.sep):
         path = path[:-1]
     global __images_path
@@ -183,7 +180,7 @@ def set_fonts_path(path):
     exist, otherwise it returns True.
     """
     if not os.access(path, os.F_OK):
-        raise IOError, path + " not found."
+        raise(IOError, path + " not found.")
     if path.endswith(os.sep):
         path = path[:-1]
     global __fonts_path
@@ -198,7 +195,7 @@ def set_sounds_path(path):
     exist, otherwise it returns True.
     """
     if not os.access(path, os.F_OK):
-        raise IOError, path + " not found."
+        raise(IOError, path + " not found.")
     if path.endswith(os.sep):
         path = path[:-1]
     global __sounds_path
@@ -229,3 +226,4 @@ def get_sounds_path():
     set yet.
     """
     return __sounds_path
+

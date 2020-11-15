@@ -2,6 +2,7 @@ import random
 import pygame
 from src.Components.Skill import Skill,SkillCombat,Effect,SkillResult
 import src.Const as Const
+from src.Components.Stats import Stats
 
 class EffDamage(Effect):
     def __init__(self,caster,owner,dmg, tick=None):
@@ -57,7 +58,9 @@ class SkillAttack(SkillCombat):
 
     def previewCast(self,targets):
         result = SkillResult()
-        
+        result.skill =self
+        result.source = self.caster
+        result.targets = targets
         if(self.isValidTarget(targets)):
             result.success = True
             for target in targets:
@@ -66,9 +69,9 @@ class SkillAttack(SkillCombat):
         return result
 
     def calculateDamage(self, caster,target):
-        atts = caster.stats.Att
+        atts = caster.get_stat(Stats.sAttack).value
         atts = atts + random.randint(1, 10) - 5
-        defs = target.stats.Def
+        defs = target.get_stat(Stats.sDefense).value
         x = atts-defs
         if(x>0):
             return [EffDamage(caster,target,x)]
@@ -91,9 +94,9 @@ class SkillSlashAttack(SkillAttack):
         pass
 
     def calculateDamage(self, caster,target):
-        atts = caster.stats.Att
+        atts = caster.get_stat(Stats.sAttack).value
         atts = atts + random.randint(1, 10) - 5
-        defs = target.stats.Def
+        defs = target.get_stat(Stats.sDefense).value
         x = atts-defs
         if(x>0):
             return [EffDamage(caster,target,x),EffBleed(caster,target,2,x)]
@@ -109,9 +112,9 @@ class SkillSmokeBomb(SkillAttack):
         pass
 
     def calculateDamage(self, caster,target):
-        atts = caster.stats.Att
+        atts = caster.get_stat(Stats.sAttack).value
         atts = atts + random.randint(1, 10) - 5
-        defs = target.stats.Def
+        defs = target.get_stat(Stats.sDefense).value
         x = atts-defs
         if(x>0):
             return [EffDamage(caster,target,x),EffBleed(caster,target,2,x)]

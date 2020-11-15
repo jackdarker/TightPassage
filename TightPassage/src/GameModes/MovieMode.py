@@ -1,12 +1,12 @@
 import pygame
 import src.Const as Const
+import src.Components.ResourceManager as RM
 import src.GameMode as GameMode
 import src.Support as Support
 import src.Tools as Tools
 from src.Tools import TileMapCreator
 import src.Components.ComponentGraphics
-from src.Components.ComponentGraphics import ComponentGraphics
-from src.Components.ComponentGraphics import AnimData
+from src.Components.ComponentGraphics import ComponentGraphics,AnimData
 
 class SceneData():
     """contains data for a dialogscene
@@ -31,6 +31,15 @@ class MovieMode(GameMode.GameMode):
         self.cGraphic.switchTo(scene.name)
         self.enabled=False
 
+        self.image = pygame.Surface(Const.WINDOW_SIZE)
+
+        self.bg=pygame.sprite.DirtySprite()
+        self.bg.image = RM.get_image('cgs\\Nature Background.png')
+        self.bg.rect = self.bg.image.get_rect()
+        self.bg.rect.size = (400,400)#Const.WINDOW_SIZE
+        self.bg.dirty=1
+        self.image.blit(self.bg.image,(0,0))
+
     def processInput(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -47,6 +56,7 @@ class MovieMode(GameMode.GameMode):
         self.cGraphic.update()  #Todo center graphic on Window
 
     def render(self, window):
+        window.blit(self.bg.image,(0,0))
         self.cGraphic.draw(window)
 
     def show(self):

@@ -47,12 +47,22 @@ class Skill():
         return (sorted(self.targetFilter()(targets))== sorted(targets))
 
     def getCost(self):
-        """returns infomration about the cost to execute the skill"""
+        """returns information about the cost to execute the skill"""
         return {}
 
-    def getDescription(self):
-        """returns a description of the skill for view"""
+    def getName(self):
+        """returns name of the skill for listboxes/labels"""
         return self.name
+
+    def getDescription(self):
+        """returns a description of the skill for tooltip"""
+        return self.name
+
+    def getRenderData(self):
+        """
+        """
+        return None
+
 
     def previewCast(self,targets):
         result = SkillResult()
@@ -194,5 +204,9 @@ class Effect():
 class SkillResult():
     def __init__(self):
         self.success = False
+        self.source = None
+        self.targets = []
+        self.skill = None
         self.effects = []
         pass
+

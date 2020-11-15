@@ -9,6 +9,7 @@ from pygame.locals import *
 import sys; sys.path.insert(0, "..")
 
 from src.UI.pgu.pgu import gui
+from src.UI.pgu.pgu import html
 
 # Load an alternate theme to show how it is done. You can also 
 # specify a path (absolute or relative) to your own custom theme:
