@@ -132,8 +132,15 @@ class Image(widget.Widget):
 
     def __init__(self,value,**params):
         params.setdefault('focusable',False)
+        params.setdefault('scaleSymetric',True)
         super(Image, self).__init__(**params)
+         
+        self.original_size = (params.get('width',None),params.get('height',None))
+        self.scaleSymetric = params.get('scaleSymetric',True)
+        self.set_image(value)
+        
 
+    def set_image(self,value):
         if (not value):
             raise PguError("Image widget takes a path or pygame surface as first argument")
 
@@ -144,19 +151,27 @@ class Image(widget.Widget):
                 raise PguError("Cannot load the image '%s'" % value)
 
         ow,oh = iw,ih = value.get_width(),value.get_height()
-        sw,sh = self.style.width,self.style.height
+        #sw,sh = self.style.width,self.style.height
+        sw,sh = self.original_size[0],self.original_size[1] 
 
-        if sw and not sh:
-            iw,ih = sw,ih*sw/iw
-        elif sh and not sw:
-            iw,ih = iw*sh/ih,sh
-        elif sw and sh:
-            iw,ih = sw,sh
+        if(self.scaleSymetric==True):   #scale to fit image into window
+            if sw and not sh:
+                iw,ih = sw,ih*sw/iw
+            elif sh and not sw:
+                iw,ih = iw*sh/ih,sh
+            elif sw and sh:
+                iw,ih = sw,sh
+        else:
+           scale = min(sw/iw,sh/ih,1.0)     #scale to fit but keep ratio height/width
+           iw,ih = int(scale*iw), int(scale*ih)
+           #todo if the image in constructor is smaller then the next image, the rect does not update properly, but on the next image it fits ?!
 
         if (ow,oh) != (iw,ih):
             value = pygame.transform.scale(value,(iw,ih))
+
         self.style.width,self.style.height = iw,ih
         self.value = value
+        #self.chsize()
 
     def paint(self,s):
         s.blit(self.value,(0,0))

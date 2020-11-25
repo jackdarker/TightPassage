@@ -179,7 +179,8 @@ class BattleScreen():
                     #bt.disabled=True
                     #btTable.td(bt,align=-1)
                 i+=1
-    
+        btTable.resize()#width = btTable.style.width, height = btTable.style.width) #todo why do I get issues when not resizing here
+
     def _on_effectFinished(self):
         pass
 

@@ -4,7 +4,7 @@ import pygame
 #some global constants
 
 FPS = 60.0
-WINDOW_SIZE = (1000, 1000)
+WINDOW_SIZE = (800, 800)
 CAPTION = "dungeon"
 BACKGROUND_COLOR = (40, 40, 40)
 

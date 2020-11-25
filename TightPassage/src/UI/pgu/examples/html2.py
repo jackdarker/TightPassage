@@ -8,14 +8,28 @@ import sys; sys.path.insert(0, "..")
 from src.UI.pgu.pgu import gui
 from src.UI.pgu.pgu import html
 
-app = gui.Desktop(width=780,height=500)
+app = gui.Desktop(width=780,height=800)
 
 data = """
 <h1>header 1</h1>
 <h2 bgcolor='red'>header 2</h2>
 <h3>header 3</h3>
-<p bgcolor='red'>this is normal <b>this is bold</b> <i>this is italic</i> <u>this is underline</u></p>
-
+<p>
+	<font color="#990000">This text is hexcolor #990000</font><br />
+	<font color="red">This text is red</font>
+</p>
+<textarea cols="50" rows="2">Text area!</textarea>
+<pre>
+	It's a thief in the night
+		To come and grab you     
+	
+	It can creep up inside you 
+		And consume you 
+</pre>
+<a href="http://www.tutorialehtml.com" target="_blank" title="HTML Tutorials">HTML Tutorials</a>
+<div style='color: #88ffff;'>this is normal <b>this is bold</b> <i>this is italic</i> <u>this is underline</u></div>
+"""
+data2="""
 <table border=1 bgcolor='yellow' width=200 align=center>
     <tr>
     <th bgcolor='#ffffee'>pgu

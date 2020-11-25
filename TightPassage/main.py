@@ -13,6 +13,8 @@ import src.GameModes.MenuMode as MenuMode
 import src.GameModes.MovieMode as MovieMode
 import src.GameState as GameState
 
+from src.DialogMode.DialogScene import DialogScene
+from Tutorial.Tutorial1 import *
 import testGame.battleTest as battleTest #todo remove this
 
 class App(GameModeObserver.GameModeObserver):
@@ -44,6 +46,8 @@ class App(GameModeObserver.GameModeObserver):
         intro.loadImageStrip(Const.resource_path("assets\sprites\Movie"),24)
         self.moviemode = MovieMode.MovieMode(intro)
         self.moviemode.addObserver(self)
+        #self.moviemode =  DialogScene(self.state)
+        #self.moviemode.startScene(Tutorial1())
         #self.moviemode.show()  #show the intro
         self.menumode.show_MainMenu()
 

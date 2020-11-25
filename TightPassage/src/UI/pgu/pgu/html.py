@@ -538,14 +538,17 @@ class HTML(gui.Document):
         self._locals = _locals
 
         #font = gui.theme.get("label", "", "font")
+        self.set_html(data)
+        
 
+    def set_html(self,data,loader=None):
+        self.remove_all()
         p = _html()
-        p.init(self, self.style.font, self.style.color, _globals, _locals,
-               loader=loader)
+        p.init(self, self.style.font, self.style.color, self._globals, self._locals,loader=loader)
         p.feed(data)
         p.close()
         p.mydone()
-
+        self.resize()
 
     def __getitem__(self, k):
         return self._locals[k]

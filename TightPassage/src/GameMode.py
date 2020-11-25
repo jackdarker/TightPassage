@@ -39,6 +39,10 @@ class GameMode():
     def notifyQuitRequested(self):
         for observer in self.__observers:
             observer.quitRequested()
+
+    def notifySceneDone(self):
+        for observer in self.__observers:
+            observer.quitRequested()
         
     def processInput(self):
         raise NotImplementedError()

@@ -62,7 +62,7 @@ class Tabsheet(gui.Container):
         self.tabs.connect(gui.CHANGE,self._switchTab)
         tablabels = gui.Table()
         tablabels.tr()
-        #when the toolbutton is pressed it will call gui.CHANGE->tab() and this will switchout the boxwidget with c,t or d
+        #when the toolbutton is pressed it will call gui.CHANGE->tab() and this will switchout the boxwidget with tabcontent[x]
         noPages= 0
         pageSize = (0,0)
         self.tabContent = tabContent
@@ -85,12 +85,19 @@ class Tabsheet(gui.Container):
         tablabels.tr()
         self.add(tablabels,0,0)
         self.is_expanded = True
+        for key in tabContent.keys():
+            self.switch_tab(key)
+            break
+
 
     #function called when clicking tablabels to switch tab
     def _switchTab(self):
         self.box.widget = self.tabs.value
 
     def switch_tab(self,label):
+        """ IMPORTANT: when tabcontent is a table where you add elements dynamical,
+        you have to call table.resize() or get errors because of 0-size surfaces !?
+        """
         self.box.widget =self.tabContent[label]
 
     def toggle_expand(self):

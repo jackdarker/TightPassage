@@ -5,7 +5,7 @@
     <ProjectGuid>084ed0e8-07a2-41e4-8921-b73a5154c88a</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>main.py</StartupFile>
+    <StartupFile>testGame\dialogSceneTest.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -117,6 +117,15 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\Components\UpdatableObj.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\Data\Quest\QuestGlobals.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\DialogMode\DialogScene.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\DialogMode\DialogSceneData.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\FSM.py">
@@ -300,6 +309,12 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="testGame\battleTest.py" />
+    <Compile Include="testGame\dialogSceneTest.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tutorial\Tutorial1.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="Global|PythonCore|3.6" />
@@ -308,6 +323,15 @@
     <Folder Include="assets\" />
     <Folder Include="assets\pgu_themes\" />
     <Folder Include="assets\pgu_themes\yellow\" />
+    <Folder Include="assets\sprites\" />
+    <Folder Include="assets\sprites\Movie\" />
+    <Folder Include="assets\sprites\Movie\Intro\" />
+    <Folder Include="assets\sprites\Particles\" />
+    <Folder Include="assets\sprites\portrait\" />
+    <Folder Include="assets\sprites\tiles\" />
+    <Folder Include="src\Data\" />
+    <Folder Include="src\Data\Quest\" />
+    <Folder Include="Tutorial\" />
     <Folder Include="scrap\" />
     <Folder Include="src\" />
     <Folder Include="src\Layers\" />
@@ -316,6 +340,7 @@
     <Folder Include="src\Components\" />
     <Folder Include="src\AI\" />
     <Folder Include="src\BattleMode\" />
+    <Folder Include="src\DialogMode\" />
     <Folder Include="src\UI\" />
     <Folder Include="src\TopDown\" />
     <Folder Include="src\UI\pgu\" />
@@ -379,6 +404,159 @@
     <Content Include="assets\pgu_themes\yellow\Vera.ttf" />
     <Content Include="assets\pgu_themes\yellow\vslider.down.png" />
     <Content Include="assets\pgu_themes\yellow\vslider.up.png" />
+    <Content Include="assets\sprites\achievements.png" />
+    <Content Include="assets\sprites\adventurer-bow-Sheet.png" />
+    <Content Include="assets\sprites\adventurer-hand-combat-Sheet.png" />
+    <Content Include="assets\sprites\adventurer-v1.5-Sheet.png" />
+    <Content Include="assets\sprites\AdventurerFemaleSprite.png" />
+    <Content Include="assets\sprites\Arena Tileset.png" />
+    <Content Include="assets\sprites\axe.png" />
+    <Content Include="assets\sprites\barsheet.png" />
+    <Content Include="assets\sprites\bat.png" />
+    <Content Include="assets\sprites\bluesword.png" />
+    <Content Include="assets\sprites\boss.png" />
+    <Content Include="assets\sprites\chest.png" />
+    <Content Include="assets\sprites\clotharmor.png" />
+    <Content Include="assets\sprites\Cobra Sprite Sheet.png" />
+    <Content Include="assets\sprites\death.png" />
+    <Content Include="assets\sprites\deathknight.png" />
+    <Content Include="assets\sprites\Dungeon_Tileset.png" />
+    <Content Include="assets\sprites\eye.png" />
+    <Content Include="assets\sprites\File0108.png" />
+    <Content Include="assets\sprites\fireball1.png" />
+    <Content Include="assets\sprites\Fox Sprite Sheet.png" />
+    <Content Include="assets\sprites\Ghoul Sprite Sheet.png" />
+    <Content Include="assets\sprites\goblin.png" />
+    <Content Include="assets\sprites\goldenarmor.png" />
+    <Content Include="assets\sprites\goldensword.png" />
+    <Content Include="assets\sprites\Imp Sprite Sheet.png" />
+    <Content Include="assets\sprites\item-axe.png" />
+    <Content Include="assets\sprites\item-bluesword.png" />
+    <Content Include="assets\sprites\item-burger.png" />
+    <Content Include="assets\sprites\item-cake.png" />
+    <Content Include="assets\sprites\item-clotharmor.png" />
+    <Content Include="assets\sprites\item-firepotion.png" />
+    <Content Include="assets\sprites\item-flask.png" />
+    <Content Include="assets\sprites\item-goldenarmor.png" />
+    <Content Include="assets\sprites\item-goldensword.png" />
+    <Content Include="assets\sprites\item-leatherarmor.png" />
+    <Content Include="assets\sprites\item-mailarmor.png" />
+    <Content Include="assets\sprites\item-morningstar.png" />
+    <Content Include="assets\sprites\item-platearmor.png" />
+    <Content Include="assets\sprites\item-redarmor.png" />
+    <Content Include="assets\sprites\item-redsword.png" />
+    <Content Include="assets\sprites\item-sword1.png" />
+    <Content Include="assets\sprites\item-sword2.png" />
+    <Content Include="assets\sprites\leatherarmor.png" />
+    <Content Include="assets\sprites\loot.png" />
+    <Content Include="assets\sprites\mailarmor.png" />
+    <Content Include="assets\sprites\Mimic Sprite Sheet.png" />
+    <Content Include="assets\sprites\Minotaur - Sprite Sheet.png" />
+    <Content Include="assets\sprites\morningstar.png" />
+    <Content Include="assets\sprites\Movie\Intro\0001.png" />
+    <Content Include="assets\sprites\Movie\Intro\0002.png" />
+    <Content Include="assets\sprites\Movie\Intro\0003.png" />
+    <Content Include="assets\sprites\Movie\Intro\0004.png" />
+    <Content Include="assets\sprites\Movie\Intro\0005.png" />
+    <Content Include="assets\sprites\Movie\Intro\0006.png" />
+    <Content Include="assets\sprites\Movie\Intro\0007.png" />
+    <Content Include="assets\sprites\Movie\Intro\0008.png" />
+    <Content Include="assets\sprites\Movie\Intro\0009.png" />
+    <Content Include="assets\sprites\Movie\Intro\0010.png" />
+    <Content Include="assets\sprites\octocat.png" />
+    <Content Include="assets\sprites\ogre.png" />
+    <Content Include="assets\sprites\Particles\005-Attack03.png" />
+    <Content Include="assets\sprites\Particles\027-Support04.png" />
+    <Content Include="assets\sprites\Particles\animation001.png" />
+    <Content Include="assets\sprites\Particles\Attack10.png" />
+    <Content Include="assets\sprites\Particles\Attack11.png" />
+    <Content Include="assets\sprites\Particles\Attack12.png" />
+    <Content Include="assets\sprites\Particles\Attack7.png" />
+    <Content Include="assets\sprites\Particles\Attack8.png" />
+    <Content Include="assets\sprites\Particles\Attack9.png" />
+    <Content Include="assets\sprites\Particles\black2.jpg" />
+    <Content Include="assets\sprites\Particles\Blood.png" />
+    <Content Include="assets\sprites\Particles\bubble.png" />
+    <Content Include="assets\sprites\Particles\ComicEffect.png" />
+    <Content Include="assets\sprites\Particles\darkdeath.png" />
+    <Content Include="assets\sprites\Particles\Darkness3.png" />
+    <Content Include="assets\sprites\Particles\dush.png" />
+    <Content Include="assets\sprites\Particles\Ice4.png" />
+    <Content Include="assets\sprites\Particles\Ice5.png" />
+    <Content Include="assets\sprites\Particles\ICY_CycloneSlash1.png" />
+    <Content Include="assets\sprites\Particles\imgbb4b1114bc5ece5.png" />
+    <Content Include="assets\sprites\Particles\light1.png" />
+    <Content Include="assets\sprites\Particles\Light3.png" />
+    <Content Include="assets\sprites\Particles\Light4.png" />
+    <Content Include="assets\sprites\Particles\Light5.png" />
+    <Content Include="assets\sprites\Particles\Meteor.png" />
+    <Content Include="assets\sprites\Particles\Spear3.png" />
+    <Content Include="assets\sprites\Particles\Special10.png" />
+    <Content Include="assets\sprites\Particles\Special11.png" />
+    <Content Include="assets\sprites\Particles\Special12.png" />
+    <Content Include="assets\sprites\Particles\Special13.png" />
+    <Content Include="assets\sprites\Particles\Special14.png" />
+    <Content Include="assets\sprites\Particles\Special17.png" />
+    <Content Include="assets\sprites\Particles\Sword10.png" />
+    <Content Include="assets\sprites\Particles\Sword8.png" />
+    <Content Include="assets\sprites\Particles\s_delete01.png" />
+    <Content Include="assets\sprites\Particles\s_expro_b2.png" />
+    <Content Include="assets\sprites\Particles\s_hit01.png" />
+    <Content Include="assets\sprites\Particles\s_kemuri2.png" />
+    <Content Include="assets\sprites\Particles\s_map02.png" />
+    <Content Include="assets\sprites\Particles\s_thunder2.png" />
+    <Content Include="assets\sprites\Particles\s_thundersword.png" />
+    <Content Include="assets\sprites\Particles\s_wind02.png" />
+    <Content Include="assets\sprites\Particles\Thunder4.png" />
+    <Content Include="assets\sprites\Particles\vortex_01.png" />
+    <Content Include="assets\sprites\Particles\wind_003.png" />
+    <Content Include="assets\sprites\platearmor.png" />
+    <Content Include="assets\sprites\portrait\cyaegha-child.png" />
+    <Content Include="assets\sprites\portrait\cyaegha-red.png" />
+    <Content Include="assets\sprites\portrait\destrocrusta01.png" />
+    <Content Include="assets\sprites\portrait\gnoll.png" />
+    <Content Include="assets\sprites\portrait\lynn1.png" />
+    <Content Include="assets\sprites\portrait\lynn2.png" />
+    <Content Include="assets\sprites\portrait\lynn3.png" />
+    <Content Include="assets\sprites\portrait\lynn4.png" />
+    <Content Include="assets\sprites\portrait\monster04.png" />
+    <Content Include="assets\sprites\portrait\st_lynn_01.png" />
+    <Content Include="assets\sprites\portrait\st_mine_01.png" />
+    <Content Include="assets\sprites\rat.png" />
+    <Content Include="assets\sprites\redarmor.png" />
+    <Content Include="assets\sprites\redsword.png" />
+    <Content Include="assets\sprites\Sample01.png" />
+    <Content Include="assets\sprites\Sample15.png" />
+    <Content Include="assets\sprites\shader.png" />
+    <Content Include="assets\sprites\shadow16.png" />
+    <Content Include="assets\sprites\skeleton.png" />
+    <Content Include="assets\sprites\skeleton2.png" />
+    <Content Include="assets\sprites\skelly.png" />
+    <Content Include="assets\sprites\snake.png" />
+    <Content Include="assets\sprites\sorcerer.png" />
+    <Content Include="assets\sprites\sparks.png" />
+    <Content Include="assets\sprites\spectre.png" />
+    <Content Include="assets\sprites\Spider Tile Set.png" />
+    <Content Include="assets\sprites\sword.png" />
+    <Content Include="assets\sprites\sword1.png" />
+    <Content Include="assets\sprites\sword2.png" />
+    <Content Include="assets\sprites\talk.png" />
+    <Content Include="assets\sprites\target.png" />
+    <Content Include="assets\sprites\tileset.png" />
+    <Content Include="assets\sprites\tilesheet.png" />
+    <Content Include="assets\sprites\tiles\Balloon.png" />
+    <Content Include="assets\sprites\tiles\IconSet.png" />
+    <Content Include="assets\sprites\tiles\TileA1.png" />
+    <Content Include="assets\sprites\tiles\TileA2.png" />
+    <Content Include="assets\sprites\tiles\TileA3.png" />
+    <Content Include="assets\sprites\tiles\TileA4.png" />
+    <Content Include="assets\sprites\tiles\TileA5.png" />
+    <Content Include="assets\sprites\tiles\TileB.png" />
+    <Content Include="assets\sprites\tiles\TileC.png" />
+    <Content Include="assets\sprites\tiles\TileD.png" />
+    <Content Include="assets\sprites\tiles\TileE.png" />
+    <Content Include="assets\sprites\wizard.png" />
+    <Content Include="assets\sprites\wolfsheet1.png" />
     <Content Include="src\UI\pgu\.gitignore" />
     <Content Include="src\UI\pgu\CHANGES.txt" />
     <Content Include="src\UI\pgu\data\themes\clean\box.down.png" />
