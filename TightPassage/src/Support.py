@@ -48,8 +48,8 @@ def get_allImagesInDirectory(sheet,size):
             frames.append(sheet.subsurface(frame_rect))
     return frames
 
-
-def get_class(fully_qualified_path, module_name, class_name, *instantiation):
+#should not be used since pythion3.3 ?
+def OBSOLETE_get_class(fully_qualified_path, module_name, class_name, *instantiation):
     """
     Returns an instantiated class for the given string descriptors
     :param fully_qualified_path: The path to the module eg("Utilities.Printer")
@@ -59,22 +59,24 @@ def get_class(fully_qualified_path, module_name, class_name, *instantiation):
     :return: An instance of the class
     """
 
-    #todo: thats not working ! Maybe use this:
-    #import importlib
-    #def str_to_class(module_name, class_name):
-    #    """Return a class instance from a string reference"""
-    #    try:
-    #        module_ = importlib.import_module(module_name)
-    #        try:
-    #            class_ = getattr(module_, class_name)()
-    #        except AttributeError:
-    #            logging.error('Class does not exist')
-    #    except ImportError:
-    #        logging.error('Module does not exist')
-    #    return class_ or None
-
     p = __import__(fully_qualified_path)
     m = getattr(p, module_name)
     c = getattr(m, class_name)
     instance = c(*instantiation)
     return instance
+
+def factory(module_class_string, super_cls: type = None, **kwargs):
+    """
+    :param module_class_string: full name of the class to create an object of
+    :param super_cls: expected super class for validity, None if bypass
+    :param kwargs: parameters to pass
+    :return:
+    """
+    import importlib
+    module_name, class_name = module_class_string.rsplit(".", 1)
+    module = importlib.import_module(module_name)
+    cls = getattr(module, class_name)
+    if super_cls is not None:
+        assert issubclass(cls, super_cls), "class {} should inherit from {}".format(class_name, super_cls.__name__)
+    obj = cls(**kwargs)
+    return obj

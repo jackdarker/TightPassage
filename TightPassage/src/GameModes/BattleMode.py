@@ -2,23 +2,22 @@ import pygame
 import pygame_menu
 import src.Const as Const
 import src.GameMode as GameMode
+from src.GameState import GameState,GameStateObserver
 from src.BattleMode.BattleController import BattleData,BattleController
 from src.BattleMode.BattleScreen import *
 
-class BattleMode(GameMode.GameMode):
+class BattleMode(GameMode.GameMode, GameStateObserver):
     """turnbased battlescreen
     """
-    def __init__(self,state,battleData):
+    def __init__(self,state,battleData, on_done = None):
         super().__init__(state)
-        
-        #self.menu_screen = screen.copy()
-        #self.menu_screen.fill((0, 0, 0, 200))
-        #self.menu_screen.set_alpha(100) #why does fill with RGB+alpha not work?
-        #self.menu = None
+        self.on_done = on_done
         self.battleCtrl = BattleController(state,battleData)
         self.view = BattleScreen(state,self.battleCtrl)
         self.view.addObserver(self.battleCtrl)
         state.addObserver(self)
+        self.paused = False
+        self.done = False
         self.state.inGame = True
 
     def processInput(self):
@@ -30,9 +29,12 @@ class BattleMode(GameMode.GameMode):
         self.view.processInput(events)
 
     def update(self,dt):
-        self.battleCtrl.update(dt)
-        self.view.update(dt)
-        Done = self.battleCtrl.battleData.battleDone
+        if(not self.done):
+            self.battleCtrl.update(dt)
+            self.view.update(dt)
+            self.done = self.battleCtrl.battleData.battleDone
+            if(self.done and self.on_done): 
+                self.on_done()
         pass
         
     def render(self, window):
@@ -42,3 +44,8 @@ class BattleMode(GameMode.GameMode):
         pass
 
 
+    def is_paused(self):
+        return self.paused
+
+    def pause(self,pause=True):
+        self.paused = pause

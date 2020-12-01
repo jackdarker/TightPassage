@@ -107,6 +107,11 @@ class Interactable(pygame.sprite.Sprite):
         for observer in self.__observers:
             observer.OnHit(self,otherSprite)
 
+    def notifyOnExit(self,otherSprite):
+        """an Interactable should cal this if it detects that it is colliding with another Interactable"""
+        for observer in self.__observers:
+            observer.OnExit(self,otherSprite)
+
     def notifyOnInteract(self,otherSprite):
         """trigger this if the player is interacting with something"""
         for observer in self.__observers:

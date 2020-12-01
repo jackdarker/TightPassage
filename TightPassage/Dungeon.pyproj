@@ -5,7 +5,7 @@
     <ProjectGuid>084ed0e8-07a2-41e4-8921-b73a5154c88a</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>testGame\dialogSceneTest.py</StartupFile>
+    <StartupFile>testGame\controlstest.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -228,6 +228,9 @@
     <Compile Include="src\UI\Controls.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="src\UI\FadeInOut.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="src\UI\pgu\data\themes\default\generate.py" />
     <Compile Include="src\UI\pgu\data\themes\tools\convertconfig.py" />
     <Compile Include="src\UI\pgu\docs\build.py" />
@@ -309,6 +312,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="testGame\battleTest.py" />
+    <Compile Include="testGame\controlstest.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="testGame\dialogSceneTest.py">
       <SubType>Code</SubType>
     </Compile>

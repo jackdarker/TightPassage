@@ -10,6 +10,8 @@ class GameModeObserver():
         pass
     def showGameRequested(self,Message):
         pass
+    def showSceneRequested(self,Scenedata):
+        pass
     def gameWon(self):
         pass
     def gameLost(self):

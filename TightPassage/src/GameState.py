@@ -1,6 +1,7 @@
 import pygame
 from src.Vector import Vector2
 from src.Components.StatEngine import *
+import src.Support as Support
 
 class GameState():
     """Holds all the data of the game
@@ -93,3 +94,37 @@ class GameState():
     def notifyWarpTriggered(self,warp):
         for observer in self.observers:
             observer.warpTriggered(warp)
+
+    def notifySceneTriggered(self,triggersource,scene):
+        if(type(scene['params'])==str):     #todo nah not params !
+            #callthis = Support.get_class('Tutorial.'+scene['params'],scene['params'],scene['params'])
+            #callthis = Support.factory('Tutorial.'+scene['params']+'.'+scene['params'])
+            callthis = Support.factory(scene['params'])
+            scene = callthis
+        for observer in self.observers:
+            observer.sceneTriggered(scene)
+
+    def notifyBattleTriggered(self,triggersource,scene):
+        if(type(scene['params'])==str):     #todo nah not params !
+            #callthis = Support.factory(scene['params'])
+            #scene = callthis
+            pass
+        for observer in self.observers:
+            observer.battleTriggered(scene)
+
+class GameStateObserver():
+
+    def sceneTriggered(self,scene):
+        pass
+
+    def battleTriggered(self,scene):
+        pass
+
+    def warpTriggered(self,warp):
+        pass
+
+    def bulletFired(self,unit):
+        pass
+
+    def unitDestroyed(self,unit):
+        pass

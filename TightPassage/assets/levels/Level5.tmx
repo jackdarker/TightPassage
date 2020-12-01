@@ -92,7 +92,7 @@
   <object id="35" type="Wall" x="497.833" y="211.5" width="15.0003" height="94.3333"/>
   <object id="39" type="Trigger" gid="3153" x="132" y="159" width="46" height="44">
    <properties>
-    <property name="ID" value="Chest"/>
+    <property name="ID" value="$Chest"/>
    </properties>
   </object>
  </objectgroup>

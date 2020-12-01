@@ -181,7 +181,7 @@ class RE_Hit(RenderEffect):
         HITSOUND.set_volume(1.0)
         SPRITEIMAGE = RM.get_image("sprites/Particles/Attack11.png").convert_alpha()
         anim = AnimData()
-        anim.fps=5
+        anim.fps=10
         anim.repeatFrom = 2
         anim.repeatCycles = 10
         indices = [[0,0],[1,0],[0,0]]

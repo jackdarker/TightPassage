@@ -2,8 +2,7 @@ import sys, os
 import pygame
 
 #some global constants
-
-FPS = 60.0
+FPS = 60.0  #gameloop target speed
 WINDOW_SIZE = (800, 800)
 CAPTION = "dungeon"
 BACKGROUND_COLOR = (40, 40, 40)
@@ -30,7 +29,7 @@ COLOR_KEY = (255, 0, 255) #transparency color of sprites without alpha
 
 #debug-tools
 DEBUG = True    #enables some stuff that should only be available in dev-mode
-DRAW_COLLIDERS = True  # hitrects and colliders are drawn on screen
+DRAW_COLLIDERS = False  # hitrects and colliders are drawn on screen
 
 def resource_path(relative_path):
     """ Get the absolute path to the resource, works for dev and for PyInstaller 

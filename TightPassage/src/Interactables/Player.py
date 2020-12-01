@@ -117,6 +117,8 @@ class Player(Unit):
         self.cGraphic.addAnimation(name,anim)
         SPRITEIMAGE = None
 
+    
+
     def draw(self, surface):
         """draws the image"""
         super().draw(surface)

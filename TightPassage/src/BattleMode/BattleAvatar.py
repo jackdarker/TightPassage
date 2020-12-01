@@ -26,7 +26,10 @@ class BattleAvatar(pygame.sprite.Sprite):
         self.image.fill((128, 0, 128,0))
         self.char.cGraphic.update()
         self.char.cGraphic.draw(self.image)
-        self.Health.set_percent(self.char.HP / self.char.MaxHP)
+        val = self.char.HP / self.char.MaxHP
+        if(self.Health.percent != val):
+            self.Health.set_percent(val)
+        self.Health.update(dt)
         self.Health.draw(self.image)
             
         pass

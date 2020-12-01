@@ -27,6 +27,9 @@ class GameMode():
     def notifyShowPopupRequested(self,Message):
         for observer in self.__observers:
             observer.showPopupRequested(Message)
+    def notifyShowSceneRequested(self,Message):
+        for observer in self.__observers:
+            observer.showSceneRequested(Message)
     def notifyShowGameRequested(self):
         for observer in self.__observers:
             observer.showGameRequested()
@@ -43,7 +46,14 @@ class GameMode():
     def notifySceneDone(self):
         for observer in self.__observers:
             observer.quitRequested()
-        
+    
+    def is_paused():
+        raise NotImplementedError()
+        return false
+
+    def pause(self,pause=True):
+        raise NotImplementedError()
+
     def processInput(self):
         raise NotImplementedError()
     def update(self,dt):

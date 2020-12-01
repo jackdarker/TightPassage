@@ -8,12 +8,12 @@ import src.Interactables.Container as Container
 import src.Interactables.Unit as Unit
 import src.Interactables.Player as Player
 import src.Interactables.Imp as Imp
-from src.GameState import GameState
+from src.GameState import GameState,GameStateObserver
 import pytmx
 from src.Components.TiledImporter import TiledImporter
 import src.Components.MazeGenerator as MazeGenerator
 
-class PlayMode(GameMode.GameMode):
+class PlayMode(GameMode.GameMode ,GameStateObserver):
     """ implements the behaviour of the game (walking around, hitting walls & enemy)
     """
     def __init__(self,state):
@@ -22,6 +22,7 @@ class PlayMode(GameMode.GameMode):
         self.group=None
         self.startNewGame()
         self.state.inGame = True
+        self.paused = False
 
     def processInput(self):
         for event in pygame.event.get():
@@ -180,6 +181,15 @@ class PlayMode(GameMode.GameMode):
         # steering force
         force_end = vehicle.position + vehicle.behaviorSteering.steering_force
         pygame.draw.line(screen, Const.PURPLE, vehicle.position.as_xy_tuple(), force_end.as_xy_tuple(), 1)
+
+    def is_paused(self):
+        return self.paused
+
+    def pause(self,pause=True):
+        #when switching from playmode to another screen while pressing a key, playmode will not receive key_up
+        #therefore reset key-status on unpause
+        self.state.player.enable_control(not pause)
+        self.paused = pause
 
 
     def OBSOLETE_renderLayer(self,surface,layer,offset=(0,0)): #not used , using pyscroll

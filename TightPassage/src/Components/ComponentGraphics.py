@@ -41,7 +41,7 @@ class ComponentGraphics(pygame.sprite.Sprite):
         if you add this component to sprite.group, this will not be called, just update
         """
         if(self.image!=None and self.done == False):
-            #surface.fill((128, 0, 128,0))
+            #surface.fill((128, 0, 128,0))  dont overwrite existing surface
             surface.blit(self.image,self.rect.topleft)#, self.parent.rect)
 
     def update(self):

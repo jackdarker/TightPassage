@@ -12,19 +12,20 @@ import src.GameModes.MessageMode as MessageMode
 import src.GameModes.MenuMode as MenuMode
 import src.GameModes.MovieMode as MovieMode
 import src.GameState as GameState
-
+from src.UI.FadeInOut import FadeInOut
 from src.DialogMode.DialogScene import DialogScene
 from Tutorial.Tutorial1 import *
 import testGame.battleTest as battleTest #todo remove this
 
-class App(GameModeObserver.GameModeObserver):
+class App(GameModeObserver.GameModeObserver, GameState.GameStateObserver):
     """main-application containing the main loop
     receives notifiactions from gamemodes
     """
     def __init__(self):
         self._running = True
+        self.fader = FadeInOut(self._fadeDone)
         self.screen = None  #surface to paint on
-        self.playmode = None    #statemachine of the game
+        self.playmode = self.mainPlaymode = None    #statemachine of the game
         self.menumode = None    #menu overlay logic
         self.interactmode = None    #actual interaction like dialogs,...
         self.state = GameState.GameState()  #game data
@@ -64,8 +65,11 @@ class App(GameModeObserver.GameModeObserver):
             self.interactmode.processInput()
             self.interactmode.update(dt)
         elif(self.playmode!=None):
+            if(self.playmode.is_paused()):self.playmode.pause(False)
             self.playmode.processInput()
             self.playmode.update(dt)
+        self.fader.update(dt)
+        pass
 
     def on_render(self):
         """render all modes"""
@@ -77,9 +81,9 @@ class App(GameModeObserver.GameModeObserver):
         elif(self.moviemode.enabled):
             self.moviemode.render(self.screen)
         self.menumode.render(self.screen)
+        self.fader.draw(self.screen)
         self.display_fps()
         pygame.display.flip()
-
  
     def on_execute(self):
         """main execution loop"""
@@ -97,24 +101,38 @@ class App(GameModeObserver.GameModeObserver):
     def quitRequested(self):
         """notification"""
         self._running = False
-    
+
+    def _fadeDone(self,mode):
+        if(mode == FadeInOut.MODE_FADEOUT):
+            self.fader.start_FadeIn(False)
+        pass
+
+    def _initState(self):
+        self.state.reset()
+        self.state.addObserver(self)
+
+    def _continueMainMode(self):
+        self.fader.start_FadeIn(True)
+        self.playmode = self.mainPlaymode
+
     def newGameRequested(self,MazeGenerator):
         """notification from menumode"""
         if(self.playmode!= None):
             self.playmode.removeObserver(self)
             self.playmode = None
-        self.state.reset()
+        self._initState()
         self.state.mazeGenerator= MazeGenerator
-        self.playmode = PlayMode.PlayMode(self.state)
+        self.playmode = self.mainPlaymode = PlayMode.PlayMode(self.state)
         self.playmode.addObserver(self)
+        self.fader.start_FadeIn(True)
         pass
 
     def newBattleRequested(self,Battle):
         """starts a battle"""
-        if(self.playmode!= None):
-            self.playmode.removeObserver(self)
-            self.playmode = None
-        self.state.reset()
+        #if(self.playmode!= None):
+        #    self.playmode.removeObserver(self)
+        #    self.playmode = None
+        self._initState()
         self.state.battleData = battleTest.battleTest()
         self.playmode = BattleMode.BattleMode(self.state,self.state.battleData)
         self.playmode.addObserver(self)
@@ -122,12 +140,32 @@ class App(GameModeObserver.GameModeObserver):
 
     def showMenuRequested(self):
         """notification from gamemode"""
+        self.playmode.pause(True)
         self.menumode.show_MainMenu()
 
     def showPopupRequested(self,Message):
         """notification from gamemode"""
+        self.playmode.pause(True)
         self.interactmode = MessageMode.MessageMode(self.state,Message)
-        #self.interactmode.show()
+    
+    def battleTriggered(self,scene):
+        self.fader.start_FadeIn(True)
+        self.playmode.pause(True)
+        self.state.battleData = battleTest.battleTest()
+        self.playmode = BattleMode.BattleMode(self.state,self.state.battleData, on_done=self._continueMainMode)
+        self.playmode.addObserver(self)
+        pass
+
+    def sceneTriggered(self,scene):
+        self.showScene(scene)
+
+    def showScene(self,Scene):
+        """notification from gamemode"""
+        self.playmode.pause(True)
+        #todo FadeOut->loadScene->fadeIn the fader should instantiate the scene and onDone should replace interactmaode with the created scene
+        self.fader.start_FadeIn(True)
+        self.interactmode = DialogScene(self.state,on_done=None)#on_done)
+        self.interactmode.startScene(Scene)
 
     def display_fps(self):
         """Show the program's FPS in the window handle."""

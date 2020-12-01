@@ -4,6 +4,7 @@ import src.Const as Const
 import src.GameMode as GameMode
 import src.Components.ResourceManager as RM
 from src.UI.Controls import *
+from src.UI.FadeInOut import FadeInOut
 from src.UI.pgu.pgu import gui
 from src.DialogMode.DialogSceneData import *
 from src.Components.ComponentGraphics import ComponentGraphics,AnimData
@@ -40,12 +41,18 @@ class DialogScene(GameMode.GameMode):
 
     """
 
+    def fadeDone(self,mode):
+        if(mode == FadeInOut.MODE_FADEOUT):
+            self.fader.start_FadeIn()
+        pass
+
     def __init__(self,state,on_done=None,**params):
         params.setdefault('minImgageWidth',200)
         params.setdefault('windowLayout',2)
         self.windowLayout = params.get("windowLayout", 1)
         super().__init__(state)
         self.rect = pygame.Rect((0,0),Const.WINDOW_SIZE)
+        #self.fader = FadeInOut(self.fadeDone)
         self.cGraphic = ComponentGraphics(self)
         self.enabled=False
         self.scene = None
@@ -131,6 +138,7 @@ class DialogScene(GameMode.GameMode):
         self.scene.Setup()
         self._next()
         self.show()
+        #self.fader.start_FadeIn(True)
     
     def _next(self):
         dlg = self.scene.GetDialog().GetSetup()
@@ -157,7 +165,7 @@ class DialogScene(GameMode.GameMode):
             elif(type(element) == DialogTree.Choice):
                 self._createButtons(self.tbButtons,element.m_Choices,self._choice)
 
-        if(self.windowLayout==1):  #todo this looks shitty
+        if(self.windowLayout==1):  #todo other way to define layout?
             if(imageLeft != None):
                 self.ImageLeft.set_image(imageLeft)
             if(imageRight != None):
@@ -173,6 +181,7 @@ class DialogScene(GameMode.GameMode):
         self._next()
 
     def _on_done(self):
+        self.enabled=False
         if(self.on_done!=None):
             self.on_done()
 
@@ -228,13 +237,17 @@ class DialogScene(GameMode.GameMode):
                     
     def update(self,dt):
         #self.spriteGroup.update(dt)
-
+        #self.fader.update(dt)
         pass
 
     def render(self, window):
         window.blit(self.bg,(0,0))
         #self.spriteGroup.draw(window)
         self.app.paint(window) #pgu gui update
+        #self.fader.draw(window)
 
     def show(self):
         self.enabled = True
+
+
+

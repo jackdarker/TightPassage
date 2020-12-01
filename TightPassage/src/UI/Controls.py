@@ -195,15 +195,16 @@ class Textlog(gui.Container):
 
 class PercentBar(pygame.sprite.Sprite):
     """similiar to Progressbar but with change of color depending actual value
-        gradient is list of tuples (threshold,color); the color will be active if value>=threshold
+        gradient is list of tuples (threshold,color); the color will be active if value>=threshold;
         there should be at least listitems for value = min and =max
-    """
 
+    """
     def __init__(self, size, gradient, horizontal=True):
         self.gradient = gradient
         self.color = gradient[0][1]
         pygame.sprite.Sprite.__init__(self)
-        self.percent = 1.0
+        self.percent = self.old_percent = self.ani_percent = 1.0
+        self.ani_speed = Const.FPS*0.1
         self.horizontal = horizontal
         self.image = pygame.Surface(size).convert_alpha()
         self.rect = self.image.get_rect()
@@ -211,27 +212,51 @@ class PercentBar(pygame.sprite.Sprite):
     def set_percent(self, value):
         """value is [0.00..1.00]
         """
+        self.ani_percent = 0.0
+        self.old_percent = self.percent
         self.percent = value
         if(self.percent<0): self.percent=0
         for grad in self.gradient:
             if(self.percent>=grad[0]):
                 self.color=grad[1]
-        if self.horizontal:
-            width = round(self.rect.w * self.percent)
-            height = self.rect.h
-        else:
-            width = self.rect.w
-            height = round(self.rect.h * self.percent)
-        self.image.fill(Const.OPAGUE)
-        pygame.draw.rect(self.image,self.color,(0, 0, width, height))
-        pygame.draw.rect(self.image,Const.BLACK,self.rect,1)
 
     def draw(self, surface):
-        
         # Render to the screen
-        surface.blit(self.image, (0,0))
+        surface.blit(self.image, self.rect.topleft)
 
-    def update(self):
+    def update(self,dt):
+        #after value was changed animate the change
+        #
+        if(self.percent != self.old_percent):
+            self.ani_percent = self.ani_percent +self.ani_speed/100
+            if(self.ani_percent>1): 
+                self.ani_percent =1
+
+            y = height = old_height = self.rect.h
+            x = width = old_width = self.rect.w
+            if self.horizontal:     #todo also in right to left direction
+                #width = round(self.rect.w * self.percent)
+                old_width = round(self.rect.w * self.old_percent)
+                width = round(self.rect.w * self.ani_percent* (self.old_percent - self.percent))
+                x = old_width - width
+            else:
+                old_height = round(self.rect.h * self.old_percent)
+                height = round(self.rect.h * self.ani_percent* (self.old_percent - self.percent))
+                y = old_height - height
+
+            self.image.fill(Const.OPAGUE)
+            if(self.ani_percent>=1):
+                self.old_percent = self.percent
+                pygame.draw.rect(self.image,self.color,(0, 0, x, y))
+            else:
+                if self.horizontal:
+                    y = 0
+                else:
+                    x = 0
+                pygame.draw.rect(self.image,self.color,(0, 0, old_width, old_height))
+                pygame.draw.rect(self.image,Const.BRIGHT_RED,(x, y, width, height)) #todo color= complement color
+            pygame.draw.rect(self.image,Const.BLACK,self.rect,1) #draw border
+
         pass
 
 class ColorBar(gui.ProgressBar):
@@ -263,6 +288,7 @@ class ColorBar(gui.ProgressBar):
             r.w = r.w*(self.value-self.min)/(self.max-self.min)
             self.bar = r
             pguglobals.app.theme.render(s,self.color,r)
+        pass
 
 class CharacterCard(gui.Container):
     """displays the actual character-bust and stats
@@ -320,6 +346,79 @@ class CharacterCard(gui.Container):
             self.Healthbar.value = self.char.HP*100 / self.char.MaxHP
         self.dirty = False
         pass
+
+
+def renderTextCenteredAt(text, font, colour, x, y, screen, allowed_width):
+    # first, split the text into words
+    words = text.split()
+
+    # now, construct lines out of these words
+    lines = []
+    while len(words) > 0:
+        # get as many words as will fit within allowed_width
+        line_words = []
+        while len(words) > 0:
+            line_words.append(words.pop(0))
+            fw, fh = font.size(' '.join(line_words + words[:1]))
+            if fw > allowed_width:
+                break
+
+        # add a line consisting of those words
+        line = ' '.join(line_words)
+        lines.append(line)
+
+    # now we've split our text into lines that fit into the width, actually
+    # render them
+
+    # we'll render each line below the last, so we need to keep track of
+    # the culmative height of the lines we've rendered so far
+    y_offset = 0
+    for line in lines:
+        fw, fh = font.size(line)
+
+        # (tx, ty) is the top-left of the font surface
+        tx = x - fw / 2
+        ty = y + y_offset
+
+        font_surface = font.render(line, True, colour)
+        screen.blit(font_surface, (tx, ty))
+
+        y_offset += fh
+def wrap_words_to_fit(text, scale, width, x_kerning=0):
+    split_on_newlines = text.split("\n")
+    if len(split_on_newlines) > 1:
+        """if it's got newlines, split it, call this method again, and re-combine"""
+        wrapped_substrings = []
+        for line in split_on_newlines:
+            wrapped_substrings.append(TextImage.wrap_words_to_fit(line, scale, width, x_kerning=x_kerning))
+
+        return "\n".join(wrapped_substrings)
+
+    text = text.replace("\n", " ")  # shouldn't be any at this point, but just to be safe~
+    words = text.split(" ")
+    lines = []
+    cur_line = []
+
+    while len(words) > 0:
+        if len(cur_line) == 0:
+            cur_line.append(words[0])
+            words = words[1:]
+
+        if len(words) == 0:
+            lines.append(" ".join(cur_line))
+            cur_line.clear()
+
+        elif TextImage.calc_width(" ".join(cur_line + [words[0]]), scale, x_kerning=x_kerning) > width:
+            lines.append(" ".join(cur_line))
+            cur_line.clear()
+
+        elif len(words) > 0:
+            cur_line.append(words[0])
+            words = words[1:]
+            if len(words) == 0:
+                lines.append(" ".join(cur_line))
+
+    return "\n".join(lines)
 
 
 class OBSOLETE_Textbox(gui.Label):  #use TextArea instead

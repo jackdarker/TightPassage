@@ -90,7 +90,7 @@ if __name__ == "__main__" :
     pygame.init()
     screen = pygame.display.set_mode(Const.WINDOW_SIZE, pygame.HWSURFACE | pygame.DOUBLEBUF  ) #| pygame.SCALED??
     pygame.mixer.init()
-
+    RM.set_images_path(Const.resource_path("assets"))
     game = GameState()
     game.reset()
     data = battleTest()

@@ -70,6 +70,7 @@ class Unit(Interactable):
         self.direction_offset = Vector2(0,0)
         self.coolDown_Attack = 0 #cooldown attack
         self.timer_Atk = 0
+        self.enable_controll = True
         self.attacking = False
         self.cGraphic = UnitGraphics(self)
         self.levelData = GameState() #reference to singleton
@@ -77,12 +78,18 @@ class Unit(Interactable):
 
     def draw(self, surface):
         """draws the image"""
+        self.image.fill((128, 0, 128,0))
         self.cGraphic.update()
         self.cGraphic.draw(self.image)   #self.cGraphic.draw(surface)
 
+    def enable_control(self, state):
+        self.enable_controll = state
+        if(state == False):
+            self.direction_stack.clear()
+
     def add_direction(self, key):
         """Add a pressed direction key on the direction stack."""
-        if key in Interactable.DIRECT_DICT:
+        if self.enable_controll and key in Interactable.DIRECT_DICT:
             if key in self.direction_stack:
                 self.direction_stack.remove(key)
             self.direction_stack.append(key)
