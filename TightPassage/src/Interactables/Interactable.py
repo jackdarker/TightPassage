@@ -46,6 +46,13 @@ class Interactable(pygame.sprite.Sprite):
     STAT_DIEING = "dieing"
     STAT_DEAD = "dead"
 
+    #codes for self.ai
+    AI_IDLE = "idle"
+    AI_SEARCH = "search"
+    AI_FOLLOW ="follow"
+    AI_ATTACK ="attack"
+    AI_FLEE= "flee"
+
     def __init__(self,rect,direction,new_id=0):
         if(new_id==0):
             new_id=Interactable.get_next_valid_id()
@@ -108,7 +115,7 @@ class Interactable(pygame.sprite.Sprite):
             observer.OnHit(self,otherSprite)
 
     def notifyOnExit(self,otherSprite):
-        """an Interactable should cal this if it detects that it is colliding with another Interactable"""
+        """  """
         for observer in self.__observers:
             observer.OnExit(self,otherSprite)
 

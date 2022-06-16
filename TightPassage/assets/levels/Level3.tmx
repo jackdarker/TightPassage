@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.4" tiledversion="2020.08.05" orientation="orthogonal" renderorder="right-down" width="16" height="16" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="36">
+<map version="1.4" tiledversion="2020.08.05" orientation="orthogonal" renderorder="right-down" width="16" height="16" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="38">
  <editorsettings>
   <export target="." format="json"/>
  </editorsettings>
@@ -74,12 +74,6 @@
     <property name="target" value="west"/>
    </properties>
   </object>
-  <object id="11" type="Enemy" x="398" y="139">
-   <properties>
-    <property name="class" value="Imp"/>
-   </properties>
-   <point/>
-  </object>
   <object id="14" type="Warp" x="466" y="228.333" width="20" height="60">
    <properties>
     <property name="map" value="Level4.tmx"/>
@@ -103,5 +97,17 @@
   <object id="33" type="Wall" x="193.167" y="499.834" width="131.667" height="12.3333"/>
   <object id="34" type="Wall" x="-4.1669" y="214.167" width="14.3337" height="90.3333"/>
   <object id="35" type="Wall" x="496.167" y="210.167" width="15.0003" height="94.3333"/>
+  <object id="36" type="Enemy" x="181" y="174">
+   <properties>
+    <property name="class" value="Imp"/>
+   </properties>
+   <point/>
+  </object>
+  <object id="37" type="Enemy" x="255" y="389">
+   <properties>
+    <property name="class" value="Imp"/>
+   </properties>
+   <point/>
+  </object>
  </objectgroup>
 </map>

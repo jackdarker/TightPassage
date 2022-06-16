@@ -7,6 +7,18 @@
    <frame tileid="41" duration="200"/>
    <frame tileid="42" duration="200"/>
    <frame tileid="43" duration="200"/>
+   <frame tileid="80" duration="200"/>
+   <frame tileid="81" duration="200"/>
+   <frame tileid="82" duration="200"/>
+   <frame tileid="83" duration="200"/>
+  </animation>
+ </tile>
+ <tile id="2720">
+  <animation>
+   <frame tileid="2720" duration="200"/>
+   <frame tileid="2721" duration="200"/>
+   <frame tileid="2722" duration="200"/>
+   <frame tileid="2723" duration="200"/>
   </animation>
  </tile>
 </tileset>

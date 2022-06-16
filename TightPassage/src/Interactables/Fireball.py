@@ -94,6 +94,11 @@ class Fireball(Unit):
             collision = collisions.pop()
             self.notifyOnHit(collision)
             return
+        collisions = pygame.sprite.spritecollide(self, self.levelData.players, False, callback)
+        while collisions:
+            collision = collisions.pop()
+            self.notifyOnHit(collision)
+            return
         collisions = pygame.sprite.spritecollide(self, self.levelData.obstacles, False, callback)
         while collisions:
             collision = collisions.pop()

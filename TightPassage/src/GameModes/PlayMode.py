@@ -8,6 +8,7 @@ import src.Interactables.Container as Container
 import src.Interactables.Unit as Unit
 import src.Interactables.Player as Player
 import src.Interactables.Imp as Imp
+import src.Interactables.Turret as Turret
 from src.GameState import GameState,GameStateObserver
 import pytmx
 from src.Components.TiledImporter import TiledImporter
@@ -34,10 +35,10 @@ class PlayMode(GameMode.GameMode ,GameStateObserver):
                     self.notifyShowMenuRequested()
                 elif event.key == Player.Player.KEY_ATTACK:
                     attack = self.state.player.attack()
-                    if attack!= None:
-                        attack.addObserver(self)
-                        self.state.shoots.add(attack)
-                        self.group.add(attack)
+                    #if attack!= None:
+                    #   attack.addObserver(self)
+                    #   self.state.shoots.add(attack)
+                    #    self.group.add(attack)
                 elif event.key == Player.Player.KEY_USE:
                     self.state.player.interact()
                 else: 
@@ -96,7 +97,13 @@ class PlayMode(GameMode.GameMode ,GameStateObserver):
             self.group.remove(self.state.shoots)
 
         self.state.currentMazeNode = targetNode
-        importer = TiledImporter(self.state)
+        #factorys for tiled object creation
+        oFactorys={}
+        oFactorys["Imp"]=Imp.Imp.factory;
+        oFactorys["Snake"]=Imp.Snake.factory;
+        oFactorys["Turret"]=Turret.Turret.factory;
+
+        importer = TiledImporter(self.state,oFactorys)
         self.tiled_map = importer.loadMap(targetNode.fileName)
         # create new data source for pyscroll and create new renderer (camera)
         self.map_layer = pyscroll.BufferedRenderer(pyscroll.data.TiledMapData(self.tiled_map), 
@@ -146,6 +153,8 @@ class PlayMode(GameMode.GameMode ,GameStateObserver):
          # center the map/screen on our Hero
         #  todo no camera tracking? 
         #self.group.center(self.state.player.rect.center)
+        for unit in self.state.doors:
+            unit.draw(window)   #todo sort z depth
         for unit in self.state.units:
             unit.draw(window)   #todo sort z depth
         self.state.player.draw(window)
@@ -175,8 +184,8 @@ class PlayMode(GameMode.GameMode ,GameStateObserver):
 
     def draw_debug_vectors(self,screen, vehicle):
         # vehicle axis, (r, g, b) == (x_axis, y_axis, z_axis)
-        pygame.draw.line(screen, Const.RED, vehicle.position.as_xy_tuple(), (vehicle.position + vehicle.direction * 20).as_xy_tuple(), 1)
-        pygame.draw.line(screen, Const.BLUE, vehicle.position.as_xy_tuple(), (vehicle.position + vehicle.side * 20).as_xy_tuple(), 1)
+        pygame.draw.line(screen, Const.RED, vehicle.position.as_xy_tuple(), (vehicle.position + vehicle.direction * 20).as_xy_tuple(), 1) #forward
+        pygame.draw.line(screen, Const.BLUE, vehicle.position.as_xy_tuple(), (vehicle.position + vehicle.side * 20).as_xy_tuple(), 1) #perp
 
         # steering force
         force_end = vehicle.position + vehicle.behaviorSteering.steering_force
@@ -241,6 +250,17 @@ class PlayMode(GameMode.GameMode ,GameStateObserver):
                 otherSprite.postInteraction()
                 self.notifyShowPopupRequested("The chest is empty")
                 pass
+        pass
+
+    def bulletFired(self,unit):
+        unit.addObserver(self)
+        self.state.shoots.add(unit)
+        self.group.add(unit)
+        pass
+
+    def unitDestroyed(self,unit):
+        if(unit==self.state.player):
+            self.notifyShowPopupRequested("You died !")
         pass
 
     def warpTriggered(self,warp):

@@ -5,7 +5,7 @@
     <ProjectGuid>084ed0e8-07a2-41e4-8921-b73a5154c88a</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>testGame\controlstest.py</StartupFile>
+    <StartupFile>main.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -13,6 +13,7 @@
     <Name>Dungeon</Name>
     <RootNamespace>PythonApplication1</RootNamespace>
     <InterpreterId>Global|PythonCore|3.6</InterpreterId>
+    <IsWindowsApplication>False</IsWindowsApplication>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -190,6 +191,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\Interactables\Player.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="src\Interactables\Turret.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="src\Interactables\Unit.py">

@@ -4,13 +4,13 @@ from src.Vector import Vector2
 import src.Const as Const
 import src.Support as Support
 
-import src.Interactables.Interactable
 from src.Interactables.Interactable import Interactable
 import src.Components.ComponentGraphics
 from src.Components.ComponentGraphics import UnitGraphics
 from src.GameState import GameState
-from src.AI.BehaviourSteering import BehaviourSteering
+from src.AI.BehaviourSteering import BehaviourSteering,BehaviourSteerNone
 from src.AI.SensorObstacle import SensorObstacle
+from src.AI.SensorNoise import SensorNone
 
 class Unit(Interactable):
 
@@ -21,7 +21,7 @@ class Unit(Interactable):
     MOVESOUND = None
     DEATHSOUND = None
 
-    def __init__(self, rect, speed, direction=Vector2(1,0)):
+    def __init__(self, rect, speed, direction=Vector2(-1,0)):
         """
         Arguments are a rect representing the Player's location and
         dimension, the speed(in pixels/frame) of the Player, and the Player's
@@ -34,6 +34,10 @@ class Unit(Interactable):
         self.hitrect.center = self.rect.center
         self.speed = speed
         self.health = 3
+
+        ### AI-variables
+        self.ai = Interactable.AI_IDLE
+        self.throttleAI = 0
         #todo:
         # vector types
         self.velocity = speed
@@ -62,9 +66,9 @@ class Unit(Interactable):
             type(self).DEATHSOUND = pygame.mixer.Sound(Const.resource_path("assets/sounds/death.wav"))
             type(self).DEATHSOUND.set_volume(1.0)
         self.direction_stack = []  #Held keys in the order they were pressed.
-
+        self.sensorPlayer = SensorNone(self)
         self.sensorObstacle = SensorObstacle(self)
-        self.behaviorSteering = BehaviourSteering(self)
+        self.behaviorSteering = BehaviourSteerNone(self)
         self.weight = 1.0
 
         self.direction_offset = Vector2(0,0)
@@ -121,6 +125,7 @@ class Unit(Interactable):
                 self.timer_Atk-=1
             else:
                 self.attacking = False
+            self.updateBrain()
             self.behaviorSteering.update(dt)
             if self.direction_stack or self.direction_offset != Vector2(0,0):
                 self.movement( 0)
@@ -132,6 +137,9 @@ class Unit(Interactable):
             #        collision = collisions.pop()
             #        self.levelData.notifyWarpTriggered(collision)
 
+    def updateBrain(self):
+        """called to decide what to do"""
+        pass
 
     def start_dieing(self):
         """ triggers the die-sequence
@@ -148,6 +156,7 @@ class Unit(Interactable):
 
     def OnDeath(self):
         self.kill()
+        GameState().notifyUnitDestroyed(self)
 
     def attack(self):
         """attack in view direction"""
@@ -155,15 +164,18 @@ class Unit(Interactable):
             self.coolDown_Attack = Const.FPS
             self.timer_Atk = Const.FPS // 2 #todo depends on attack
             self.attacking = True
-            #return Fireball.Fireball(self, 10, self.direction)
-        else:
-            return None
+            self.triggerAttack(Fireball.Fireball(self, 10, self.direction))
+
+    def triggerAttack(self,attack):
+        """you have to add your attack/damager to the game"""
+        if attack!= None:
+            GameState().notifyBulletFired(attack)
 
     def damage(self,amount,direction):
         """apply damage to the target"""
         self.health-=amount
         pygame.mixer.Channel(Interactable.SfxCh_Hit).play(type(self).HITSOUND)
-        self.direction_offset = direction #Interactable.DIRECT_DICT[direction]
+        self.direction_offset = direction
         self.direction_offset = self.direction_offset*4*amount  #push in oposite direction on hit
         
 
@@ -180,6 +192,7 @@ class Unit(Interactable):
 
         self.hitrect[i] += self.direction_offset[i]
         if self.direction_offset[i]>0: self.direction_offset[i] -= 1    #... to make it so that the offset is stretched about several frames
+        elif self.direction_offset[i]<0: self.direction_offset[i] += 1
         callback = self.collide_other(self.hitrect)  #Collidable callback created.
         collisions = pygame.sprite.spritecollide(self, obstacles, False, callback)
         while collisions:

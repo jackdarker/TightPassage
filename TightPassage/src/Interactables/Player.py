@@ -6,8 +6,7 @@ from src.Vector import Vector2
 import src.Interactables.Unit
 from src.Interactables.Unit import Unit
 from src.Interactables.Fireball import Fireball
-from src.Interactables.Damager import Damager
-from src.Interactables.Damager import DamagerInfo
+from src.Interactables.Damager import Damager,DamagerInfo
 import src.Components.ComponentGraphics
 from src.Components.ComponentGraphics import UnitGraphics
 from src.Components.ComponentGraphics import AnimData
@@ -67,7 +66,6 @@ class Player(Unit):
         #
         anim = AnimData()
         name="walkright"
-        anim.fps=2
         indices = [[0,1],[1,1],[2,1],[3,1]]
         anim.frames = Support.get_images(SPRITEIMAGE, indices, self.rect.size)
         self.cGraphic.addAnimation(name,anim)
@@ -117,13 +115,14 @@ class Player(Unit):
         self.cGraphic.addAnimation(name,anim)
         SPRITEIMAGE = None
 
-    
-
     def draw(self, surface):
         """draws the image"""
         super().draw(surface)
         if(Const.DRAW_COLLIDERS):   #just for visualisation:
             self.image.blit(self.hitboximage,(0,0))
+
+    def updateBrain(self):
+        pass
 
     def attack(self):
         """attack in view direction"""
@@ -131,11 +130,10 @@ class Player(Unit):
             self.coolDown_Attack = Const.FPS
             self.timer_Atk = Const.FPS // 2 #todo depends on attack
             self.attacking = True
-
-            return Damager(self,DamagerInfo(self.direction, Const.FPS//2,1,(16,32),(28,0)))
+            self.triggerAttack(Damager(self,DamagerInfo(self.direction, Const.FPS//2,1,(16,32),(28,0))))
             #return Fireball(self, 10, self.direction)
         else:
-            return None
+            pass
 
     def interact(self):
         """check if there is anything nearby to interact with"""

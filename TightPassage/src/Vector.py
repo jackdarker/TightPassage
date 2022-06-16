@@ -362,7 +362,7 @@ class Vector2(object):
         if isinstance(vec1, Vector2) \
                 and isinstance(vec2, Vector2):
             dist_vec = vec2 - vec1
-            return dist_vec.length()
+            return dist_vec.length#()
         else:
             raise TypeError("vec1 and vec2 must be Vector2's")
 

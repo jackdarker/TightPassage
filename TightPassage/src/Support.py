@@ -21,6 +21,20 @@ def get_images(sheet, frame_indices, size):
         frames.append(sheet.subsurface(frame_rect))
     return frames
 
+def extend_frames(frames,nx,ny):
+    """takes each frame-image and appends n more duplicates in x & y direction"""
+    _nFrames=[]
+    for frame in frames:
+        _newFrame=pygame.Surface((frame.get_width()*nx,frame.get_height()*ny),pygame.SRCALPHA).convert_alpha()
+        #_newFrame.fill((128,0,128,0))
+        for x in range(nx):
+            for y in range(ny):
+                _newFrame.blit(frame,(x*frame.get_width(),y*frame.get_height()))
+
+        _nFrames.append(_newFrame)
+    return(_nFrames)
+
+
 def get_allImages(sheet,size):
     """Get images from a sprite sheet image.
     returns a list of tiles from top left to bottom right

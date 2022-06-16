@@ -1,6 +1,7 @@
 import pygame
 import numpy as np
 import src.Const as Const
+from src.Vector import Vector2
 from src.GameState import GameState
 from pytmx.util_pygame import  load_pygame
 import src.Interactables.Block as Block
@@ -9,12 +10,14 @@ import src.Interactables.Player as Player
 import src.Interactables.Imp as Imp
 import src.Interactables.Warp as Warp
 import src.Interactables.Container as Container
+import src.Interactables.Turret as Turret
 
 class TiledImporter():
     """imports a map defined in Tiled and stores it in GameState-Singleton"""
 
-    def __init__(self,state):
+    def __init__(self,state,oFactorys):
         self.state = state
+        self.oFactorys=oFactorys
         pass
 
     def loadMap(self,filename):
@@ -32,8 +35,9 @@ class TiledImporter():
                 obstacle = Block.Block(pygame.Rect(object.x, object.y,object.width, object.height))
                 self.state.obstacles.add(obstacle)
             elif(object.type=='Enemy'):
-                obstacle = Imp.Imp((0,0,50,50)) #todo dynamic enemy creation
-                obstacle.set_rects(pygame.Rect(object.x, object.y,50, 50).center, "center")
+                kind=object.properties["class"]
+                obstacle = self.oFactorys[kind]() #Imp.Imp((0,0,50,50))
+                obstacle.set_rects((object.x, object.y),attribute="center") #obstacle.set_rects(pygame.Rect(object.x, object.y,50, 50).center, "center")
                 self.state.units.add(obstacle)
             elif(object.type=='Warp'):
                 obstacle = Warp.Warp(pygame.Rect(object.x, object.y,object.width, object.height))
@@ -49,6 +53,11 @@ class TiledImporter():
                     obstacle.image = object.image
                     obstacle.set_rects(pygame.Rect((object.x, object.y),object.image.get_size()).center, "center")
                     self.state.units.add(obstacle)
+                elif(object.ID=='$Spikes'):
+                    obstacle = Turret.Spikes(pygame.Rect(object.x, object.y,object.width,object.height))
+                    obstacle.position=Vector2(object.x, object.y)
+                    self.state.doors.add(obstacle)
+                    pass
                 else:   #if ID is not a keyword it is aconcrete class , f.e. 'Tutorial.Tutorial1'
                     if(object.OnEnter=='showScene'):
                         obstacle = Warp.Trigger(pygame.Rect(0,0,32,32), 

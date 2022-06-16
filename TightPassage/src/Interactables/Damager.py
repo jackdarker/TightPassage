@@ -10,7 +10,7 @@ from src.Interactables.Unit import Unit
 import src.Components.ComponentGraphics
 from src.Components.ComponentGraphics import UnitGraphics
 from src.Components.ComponentGraphics import AnimData
-from src.AI.BehaviourSteering import BehaviourNone
+from src.AI.BehaviourSteering import BehaviourSteerNone
 
 class DamagerInfo:
     def __init__(self, direction,duration,damage,size,offset):
@@ -48,7 +48,7 @@ class Damager(Unit):
         self.duration = self.damagerInfo.duration
         self.direction_offset = self.damagerInfo.direction
 
-        self.behaviorSteering = BehaviourNone(self)
+        self.behaviorSteering = BehaviourSteerNone(self)
 
         #just for visualisation:
         image = pygame.Surface(rect.size).convert_alpha()
@@ -78,7 +78,13 @@ class Damager(Unit):
         while collisions:
             collision = collisions.pop()
             self.notifyOnHit(collision)
-            return        
+            return
+
+        collisions = pygame.sprite.spritecollide(self, self.levelData.players, False, callback)
+        while collisions:
+            collision = collisions.pop()
+            self.notifyOnHit(collision)
+            return
 
     def OnHit(self,otherSprite):
         """hit someone and cause damage"""

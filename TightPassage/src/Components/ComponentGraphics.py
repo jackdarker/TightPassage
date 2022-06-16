@@ -86,6 +86,7 @@ class ComponentGraphics(pygame.sprite.Sprite):
                 self.anim_data = self.frame_dict.get(name)
                 self.anim_name = name
             if(self.anim_data==None):
+                self.anim_frameNo = -2
                 return #todo what if anim missing?
             if(len(self.anim_data.frames)<=0):  
                 self.anim_frameNo = -2  # flag that there are no frames

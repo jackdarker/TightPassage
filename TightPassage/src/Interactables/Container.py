@@ -2,11 +2,8 @@ import pygame
 import src.Const as Const
 import src.Support as Support
 from src.Vector import Vector2
-import src.Interactables.Interactable
 from src.Interactables.Interactable import Interactable
-import src.Components.ComponentGraphics
-from src.Components.ComponentGraphics import ComponentGraphics
-from src.Components.ComponentGraphics import AnimData
+from src.Components.ComponentGraphics import ComponentGraphics,AnimData
 
 class Chest(Interactable):
     SPRITEIMAGE = None

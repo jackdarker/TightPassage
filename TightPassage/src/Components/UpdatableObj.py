@@ -1,3 +1,5 @@
+from src.Vector import Vector2
+
 class UpdatableObj():
     """
     The base class of our game engine.

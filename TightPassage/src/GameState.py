@@ -3,6 +3,23 @@ from src.Vector import Vector2
 from src.Components.StatEngine import *
 import src.Support as Support
 
+class GameStateObserver():
+
+    def sceneTriggered(self,scene):
+        pass
+
+    def battleTriggered(self,scene):
+        pass
+
+    def warpTriggered(self,warp):
+        pass
+
+    def bulletFired(self,unit):
+        pass
+
+    def unitDestroyed(self,unit):
+        pass
+
 class GameState():
     """Holds all the data of the game
         a Singleton to store Leveldata"""
@@ -25,7 +42,8 @@ class GameState():
         self.shoots = pygame.sprite.Group()
         self.obstacles = []
         self.doors = []
-        self.player = None
+        self._player = None
+        self.players = []
         self.fileName = ""
         self.playerSpawn = None
         #maze vars
@@ -35,6 +53,18 @@ class GameState():
         #battlevars
         self.battleData = None
         self.StatEngine = StatEngine("Game")
+
+    @property
+    def player(self):
+        return self._player
+
+    @player.setter
+    def player(self, val):
+        self._player=val
+        if(len(self.players)==0):
+            self.players=[self._player]
+        else:
+            self.players[0]=self._player
 
     @property
     def worldWidth(self):
@@ -112,19 +142,3 @@ class GameState():
         for observer in self.observers:
             observer.battleTriggered(scene)
 
-class GameStateObserver():
-
-    def sceneTriggered(self,scene):
-        pass
-
-    def battleTriggered(self,scene):
-        pass
-
-    def warpTriggered(self,warp):
-        pass
-
-    def bulletFired(self,unit):
-        pass
-
-    def unitDestroyed(self,unit):
-        pass

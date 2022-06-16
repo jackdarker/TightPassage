@@ -1,6 +1,7 @@
 import os
 from sys import maxsize as sys_maxsize
 import math as math
+import random
 import pygame
 import src.Const as Const
 import src.Support as Support
@@ -9,15 +10,48 @@ from src.Vector import Vector2,EPSILON
 from src.Components.UpdatableObj import UpdatableObj
 from src.GameState import GameState
 
-class BehaviourNone(UpdatableObj):
+class BehaviourSteerNone(UpdatableObj):
+    """just stand around
+    """
     def __init__(self, unit):
         self.mob = unit
+        self.steering_force = Vector2(0.0, 0.0)
         pass
     
     def update(self, milliseconds):
         pass
 
-class BehaviourSteering(BehaviourNone):
+class BehaviourSteerBounce(BehaviourSteerNone):
+    """ move forward until obstacle is hit, then choose random direction
+    """
+    def __init__(self, unit):
+        super().__init__(unit)
+
+    def update(self, milliseconds):
+        dist_to_closest = sys_maxsize
+        closest_wall = None
+        closest_point = None
+        closest_normal = None
+        steering_force = Vector2(0.0, 0.0)
+
+        for obstacle in GameState().obstacles:  #todo only check obstacles in feelerrange
+            for feeler_local in self.mob.sensorObstacle.feelers:
+                feeler = BehaviourSteering.point_to_world_2d(feeler_local, self.mob.direction, self.mob.direction.perp, self.mob.position)
+                intersection, dist_to_current, point, normal = BehaviourSteering.getLineIntersectRect(self.mob.position,feeler,obstacle.rect)           
+                if intersection:
+                    if dist_to_current < dist_to_closest:
+                        dist_to_closest = dist_to_current
+                        closest_wall = obstacle
+                        closest_point = point
+                        closest_normal = normal.normalized
+
+            if closest_wall:
+                self.mob.direction_stack.clear()
+                dir = [pygame.K_LEFT,pygame.K_RIGHT,pygame.K_UP,pygame.K_DOWN]
+                self.mob.add_direction(dir[random.randint(0, 3)])
+                break
+
+class BehaviourSteering(BehaviourSteerNone):
     """ class used to move a mob in the world 
     """
 
